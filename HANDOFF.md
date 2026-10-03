@@ -40,29 +40,37 @@ The branch is `feat/llm-router-laya-classifier`, in the private repo `hawkh/nasi
   - **Laya:** included when `LAYA_URL` is set.
   - **CI:** `.github/workflows/llm-router-classifier.yml`.
 
-## Current numbers (model trained on train-a + train-b, 552 rows)
+## Current numbers (retrained October 3, 2026)
 
-| Validation (154) | regex | local | laya |
-|---|---|---|---|
-| Type accuracy | 32.5% | 79.2% | 34.4% |
-| Hard requests → cheapest tier | 57% | 13.5% | 24% |
-| Public (10) | 30% | 80% | 40% |
+Training uses 1,806 originals and 1,762 robustness copies. Two families (six rows)
+were removed because the unchanged leakage check detected validation overlaps.
+Both heads selected C=8; type temperature=0.54, complexity temperature=1.1.
 
-The competitor PR Nasiko-Labs/nasiko#260 uses the same model family and reports 89.8% on its own validation set and 9/10 on the public set.
+| Validation (154) | regex | local |
+|---|---|---|
+| Type accuracy | 32.5% | 86.4% |
+| Hard requests → cheapest tier | 57.3% | 10.0% |
+| ECE | 0.157 | 0.036 |
+| Low-confidence rate | 0.0% | 2.6% |
 
-## In progress / next
+Chat-history type accuracy is 92% (was 86%). Public-sample accuracy regressed to
+7/10 (was 8/10); complexity within ±1 regressed to 80% (was 100%). The report and
+PITCH disclose these tradeoffs. No Laya service was available for the new run.
 
-1. **Training data: done.** `eval/train-a` … `train-e.jsonl`: 1,812 rows in total. c, d and e (420 rows each) are grouped into paraphrase or minimal-pair `family` sets:
-   - `train-c`: robustness slices;
-   - `train-d`: realistic production traffic;
-   - `train-e`: decision-boundary minimal pairs.
+## Completed
 
-   None of them was written with access to the validation or public sets.
-2. **Retrain.** Run `python eval/train_local.py` from `llm-router/` in WSL. Then run:
-   ```
-   LAYA_URL=http://localhost:8000 BENCH_REPORT=eval/benchmark-report.md cargo test --release -p nasiko-llm-router --test classifier_benchmark -- --nocapture
-   ```
-   Commit the new `assets/local_classifier.json` and the regenerated `benchmark-report.md`. Raise the gates in the test if accuracy improves.
-3. **Tune `LOW_CONFIDENCE_FLOOR`** after retraining. Use the benchmark rows for the low-confidence rate and accuracy-when-confident; aim for 5% or less low-confidence.
-4. **Optional cascade:** local first, Laya only when local is unsure.
-5. **Refresh** the PR #1 description and `PITCH.md` with the new numbers.
+- Retrained the embedded model on cleaned train-a through train-e, using the original
+  grouped-CV trainer and unchanged validation data.
+- Regenerated `eval/benchmark-report.md` for regex and local.
+- Raised validation quality gates and added coverage/chat-history regression gates.
+- Retained `LOW_CONFIDENCE_FLOOR=0.4`: validation abstention is 2.6%, overall 1.9%.
+  Public abstention is 1/10; reducing it would accept a wrong prediction.
+- Refreshed PITCH and evaluation reproduction notes.
+
+## Next
+
+1. Assess the public-sample regression on additional independently authored traffic;
+   do not copy held-out failures into training or tune repeatedly against them.
+2. Run the benchmark with a live Laya sidecar for a current three-backend comparison.
+3. Optional: local-first cascade to Laya for low-confidence requests.
+4. Evaluate shadow-mode decisions against actual routing outcomes before rollout.

@@ -528,18 +528,18 @@ async fn classifier_benchmark() {
     };
     let (regex, local) = (get(0, "regex"), get(0, "local"));
     assert!(
-        local.accuracy >= 0.70,
+        local.accuracy >= 0.84,
         "local accuracy {:.3}",
         local.accuracy
     );
     assert!(
-        local.accuracy >= regex.accuracy + 0.30,
-        "local {:.3} must beat regex {:.3} by 30 pts",
+        local.accuracy >= regex.accuracy + 0.50,
+        "local {:.3} must beat regex {:.3} by 50 pts",
         local.accuracy,
         regex.accuracy
     );
     assert!(
-        local.macro_f1 >= 0.70,
+        local.macro_f1 >= 0.84,
         "local macro-F1 {:.3}",
         local.macro_f1
     );
@@ -549,14 +549,23 @@ async fn classifier_benchmark() {
         local.cx_within1
     );
     assert!(
-        local.hard_recall >= 0.50,
+        local.hard_recall >= 0.75,
         "local hard recall {:.3}",
         local.hard_recall
     );
-    assert!(local.ece <= 0.15, "local ECE {:.3}", local.ece);
+    assert!(local.ece <= 0.10, "local ECE {:.3}", local.ece);
     assert!(
         local.hard_to_cheapest < regex.hard_to_cheapest,
         "local must send fewer hard requests to the cheapest tier than regex"
+    );
+    assert!(
+        local.low_confidence <= 0.05,
+        "local low-confidence rate {:.3}",
+        local.low_confidence
+    );
+    assert!(
+        get(2, "local").accuracy >= 0.90,
+        "chat-history accuracy regressed"
     );
     for (tag, (n, ok)) in &local.by_tag {
         let (_, regex_ok) = regex.by_tag[tag];

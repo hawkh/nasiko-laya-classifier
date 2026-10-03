@@ -32,7 +32,7 @@ are not, and they depend on the hardware.
 ## In-process local classifier (`REQUEST_CLASSIFIER=local`)
 
 `train_local.py` trains the hashed n-gram model embedded at `assets/local_classifier.json` from
-`train-a.jsonl` + `train-b.jsonl` (552 rows). Features are computed by Rust
+`train-a.jsonl` through `train-e.jsonl` (1,806 rows after leakage cleanup). Features are computed by Rust
 (`examples/local_classifier_features.rs`), so training and serving cannot disagree. The trainer
 refuses to run if any `h4-validation.json` query near-duplicates a training query.
 
@@ -52,4 +52,24 @@ cargo test --release -p nasiko-llm-router --test classifier_benchmark -- --nocap
 LAYA_URL=http://localhost:8000 BENCH_REPORT=eval/benchmark-report.md   cargo test --release -p nasiko-llm-router --test classifier_benchmark -- --nocapture
 ```
 
-`benchmark-report.md` is the committed output of the second command.
+`benchmark-report.md` records the available backends for the latest run. Set `LAYA_URL`
+only when the sidecar is running; without it the benchmark compares regex and local.
+
+### Retraining
+
+Run `python -u eval/train_local.py` from `llm-router/` with NumPy, SciPy,
+scikit-learn and Cargo available. The trainer selects regularization and temperature
+using five-fold cross-validation grouped by training family; augmentation stays in
+its original family. Validation labels are not used for fitting.
+
+The October 2026 retraining audit found two validation overlaps in the newly added
+data: `trd-0085` and `tre-0403`. Their complete families (`trd-f073` and
+`tre-f135`, three rows each) were removed from training instead of changing the
+held-out evaluation. The remaining 1,806 originals pass the unchanged 0.7 Jaccard
+leakage guard (maximum similarity 0.64) and generate 1,762 robustness copies.
+
+
+Latest training environment: macOS arm64, Python 3.13, NumPy 2.2.6, SciPy 1.17.1,
+scikit-learn 1.8.0. `OPENBLAS_NUM_THREADS`, `OMP_NUM_THREADS`, and
+`VECLIB_MAXIMUM_THREADS` were set to 1. The retained confidence floor is 0.4; see
+`../../PITCH.md` for coverage and the public-sample regression.

@@ -1,131 +1,63 @@
-# P2 — Request classifier: pitch
+# P2 — Request classifier
 
-## 1. The problem (30 seconds)
+The Level 3 router uses a pluggable classifier to estimate request type, complexity,
+and confidence. Regex remains the default and preserves seeded routing behaviour.
+The embedded local model adds calibrated type probabilities and a complexity prior
+to the existing Thompson sampler. Laya is an optional sidecar backend with a circuit
+breaker and regex fallback.
 
-The router picks a model tier for every request. At Level 3 it decides with a keyword regex.
-On our 154 held-out requests that regex:
+## Latest evidence — October 3, 2026
 
-- **gets the request type right 32% of the time.** Anything without a keyword becomes "general";
-- **has no notion of difficulty.** Every request is "complexity 3", so the router can't tell "hi"
-  from "design a lock-free hash map";
-- **sends 57% of genuinely hard requests to the cheapest tier.**
+Release benchmark on macOS arm64, through the Rust serving features and `pick_tier`.
+Laya was unavailable for this run; earlier Laya measurements remain in Git history.
 
-It can't read other languages, typos, negations ("don't redesign anything…") or the previous
-turn ("make it funnier"). Every miss costs money on easy traffic and answer quality on hard traffic.
-
-## 2. The idea: give the router a belief, not a label
-
-We did not bolt a classifier on with hard rules such as "complexity ≥ 4 → Tier1". The router
-already has a learning decision-maker, Thompson sampling over learned quality cells, and we
-feed the classifier's *uncertainty* into it:
-
-- **Type.** The classifier returns a probability for each type, and the router *draws* the type
-  from it. An unsure classifier therefore routes like the mix it's unsure between, instead of
-  committing to a wrong guess.
-- **Complexity.** It shifts the tier starting points, weighted by how confident the classifier
-  is. A confident "trivial" leans toward the cheap tier; an unsure guess barely moves anything.
-- **Feedback still rules.** Thompson sampling keeps learning from real outcomes. The classifier
-  only sets where learning starts and which cell gets credited.
-
-**Zero regression risk.** With `REQUEST_CLASSIFIER=regex` (the default) routing is identical to
-main for the same random seed. A test over 200 seeds proves it.
-
-## 3. What we built
-
-One seam (`RequestClassifier`) with three interchangeable backends, chosen by one env var:
-
-| Backend | What it is | Latency | Can it fail? |
+| Held-out validation (154) | Regex | Previous local | Retrained local |
 |---|---|---|---|
-| `regex` | Today's behaviour, the default | µs | no |
-| `local` | Our in-process model: hashed word and character n-grams with two calibrated linear heads (type, complexity), compiled into the binary | ~0.1 ms p50, <1 ms p99 | no |
-| `laya` | Multilingual model sidecar (`laya-serve`) | ~0.7 s p50 | yes, so it has a circuit breaker (3 strikes → 30 s open → probe) and falls back to regex. A request never fails because of the classifier |
+| Type accuracy | 32.5% | 79.2% | 86.4% |
+| Macro-F1 | 0.335 | 0.787 | 0.864 |
+| Complexity within ±1 | 69.5% | 98.1% | 98.1% |
+| Hard requests recognised as hard | 0.0% | 71.4% | 78.6% |
+| Confidence ECE | 0.157 | 0.100 | 0.036 |
+| Hard → cheapest tier | 57.3% | 13.5% | 10.0% |
+| Easy → cheapest tier | 61.4% | 77.1% | 75.8% |
 
-The router also reads **conversation context**: the latest request plus the three most recent
-earlier turns, bounded and deterministic. Follow-ups like "make it funnier and shorter" are
-classified correctly.
+The new local model reaches 92% on 100 requests with chat history (previously 86%).
+Its hard-request recall on that set improves from 11.8% to 47.1%, leaving substantial
+room for improvement. Validation latency was about 0.04 ms p50 and 0.25 ms p99;
+latency comparisons with previous hardware are not controlled.
 
-## 4. Evidence, inside the pipeline
+**Public-sample regression:** accuracy falls from 8/10 to 7/10, complexity within ±1
+falls from 100% to 80%, and ECE increases from 0.133 to 0.191. This small independent
+sample does not support a claim of uniform improvement. No public examples were
+added to training to repair these misses.
 
-The benchmark is a `cargo test` (`tests/classifier_benchmark.rs`) that runs in CI on every
-llm-router PR and posts its report to the job summary. It scores every backend through the
-router's own code paths on three labelled sets, and **its quality gates fail the build if the
-model regresses**.
+## Training and confidence
 
-**Held-out validation, 154 requests.** Each is tagged with the regex failure mode it tests.
+The model trains on 1,806 originals from train-a through train-e, with 1,762 robustness
+copies. Two newly added families overlapped validation; all six rows were removed
+before fitting. The unchanged leakage guard passes (maximum Jaccard 0.64).
+Regularization and temperature come from five-fold CV grouped by paraphrase family,
+with augmented copies kept in their family. Type CV accuracy is 85.8%.
 
-| | regex | **local** | laya |
-|---|---|---|---|
-| Type accuracy | 32.5% | **79.2%** | 34.4% |
-| Macro-F1 | 0.34 | **0.79** | 0.31 |
-| Complexity within ±1 | 70% | **98%** | 73% |
-| Hard requests recognised as hard | 0% | **71%** | 36% |
-| Confidence calibration (ECE, lower is better) | 0.16 | **0.10** | 0.28 |
-| **Routing: hard → cheapest tier** (lower is better) | 57% | **13.5%** | 24% |
-| **Routing: easy → cheapest tier** (higher is better) | 61% | **77%** | 37% |
-| Latency p99 | 0.2 ms | **0.9 ms** | 1.7 s |
+The existing 0.4 confidence floor is retained: validation abstention is 2.6%, with
+86.7% type accuracy among confident requests. Chat-history abstention is 0%; public
+abstention is 1/10. Across all 264 examples the rate is 5/264 (1.9%). The public set
+alone therefore exceeds the 5% target. Lowering the floor merely to meet that target
+would accept a currently rejected wrong prediction.
 
-**Where regex fails, and what local recovers** (accuracy by failure mode):
+Low-confidence requests use the configured model and are not pinned. Benchmark
+routing columns replay `pick_tier` over 50 cold-start seeds; they do not measure
+end-to-end configured-model fallback, real model quality, or actual dollar savings.
 
-| Failure mode | regex | local |
-|---|---|---|
-| Typos, informal | 17% | 94% |
-| Context-dependent follow-ups | 14% | 59% |
-| Other languages (Hinglish, Spanish, French, …) | 26% | 70% |
-| No keywords | 32% | 68% |
-| Keyword traps ("refactor my resume") | 44% | 78% |
+## Verification and next steps
 
-The official public sample (10, https://registry.nasiko.dev/r/nasiko/classifier-eval): 30% regex vs 80% local. Our 100 requests with real chat
-history: 43% vs 86%.
+The embedded asset, report, and stricter regression gates are checked in together.
+The gates now require validation accuracy and macro-F1 ≥0.84, hard recall ≥0.75,
+ECE ≤0.10, low-confidence rate ≤5%, and chat-history accuracy ≥90%, alongside
+existing complexity, latency, per-tag, and regex comparisons.
 
-**The money story.** The router stops starving hard requests (57% → 13.5% sent to the cheapest
-tier) and sends *more* easy traffic to the cheapest tier (61% → 77%). Average spend per request
-rises a little (2.2 → 2.7 tier-cost units) because the spend moves to where quality is at stake.
-
-## 5. Engineering discipline
-
-- **One featurisation.** Rust computes the features and Python only trains on what Rust dumps,
-  so training and serving cannot drift.
-- **Leakage guard.** The trainer refuses to run if a validation query near-duplicates a training
-  query. It caught 2 exact duplicates.
-- **Honest scoring.** The report lists the requests local *breaks* (5) next to the ones it
-  fixes (77).
-- **Learning simulation.** 3000 rounds of online learning with feedback, not just one-shot
-  accuracy.
-- **Operations.** Every Level 3 decision is logged (backend, fallback reason, type
-  distribution, complexity, prior shift, latency), so it can be watched and rolled back with
-  one env var.
-
-## 6. The hard question: "a logistic regression vs a language model?"
-
-Answer it head-on. It's the reviewer's most likely objection.
-
-- **Why local wins *here*.** It was trained on *our* seven labels and *our* complexity scale.
-  Laya is general-purpose and answers zero-shot through multiple-choice questions, so it
-  confuses our label boundaries (it calls casual chat "code_understanding", and maths
-  "technical_design"). It's a label-alignment problem, not a language-understanding one.
-- **Where local is weaker.** It has no real semantics: it only knows the 552 examples it was
-  trained on. It misses things such as "What is 17 × 24?" and German small talk. On one set it
-  recognises only 12% of hard requests as hard, against Laya's 47%. Our validation data is
-  similar in style to the training data, so 79% is likely optimistic for real traffic.
-- **Why that's acceptable in a router.** The classifier only sets *starting points*; Thompson
-  sampling corrects them with real feedback. And it costs 0.1 ms, against Laya's 0.7 s.
-
-**The production design (next step): a cascade.**
-
-1. Local answers every request in under a millisecond.
-2. Only when local's confidence is low does the router ask the language model.
-
-That's language-model judgement where it matters, at a fraction of the latency. The long-term
-version replaces the linear model with a small multilingual encoder (a BERT-class model)
-*fine-tuned on these labels*, which combines both strengths. The seam, the benchmark and the
-gates already exist, so swapping in a better model is a drop-in.
-
-**To prove it on real traffic:** run in shadow mode, where the router logs local's and Laya's
-decisions next to the live one, then compare with real feedback before switching.
-
-## 7. One-liner
-
-> We turned the router's keyword guess into a calibrated belief (type, difficulty, confidence)
-> and fed that uncertainty into the router's own learning loop. It's 2.4× more accurate than
-> regex, cuts hard requests sent to the cheapest tier from 57% to 13.5%, runs in under a
-> millisecond, can't take the router down, and is identical to today when switched off.
+See [the full report](llm-router/eval/benchmark-report.md) and
+[reproduction instructions](llm-router/eval/README.md). Remaining work is to evaluate
+independent production traffic, investigate the public-sample regression without
+training on the public set, and rerun the sidecar comparison. A local-to-Laya cascade
+is optional future work and is not implemented here.
