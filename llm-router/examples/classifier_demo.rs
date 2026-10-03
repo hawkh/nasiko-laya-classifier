@@ -12,7 +12,7 @@
 //! samples over 50 seeds; (2) the failure modes that break regex — keyword traps, no
 //! keywords, other languages, typos; (3) a follow-up that only makes sense with
 //! conversation context; (4) Laya unreachable — the request is still routed, with the reason
-//! logged. Numbers over whole datasets: `bash eval/run_benchmark.sh`.
+//! logged. Numbers over whole datasets: `cargo test --test classifier_benchmark`.
 //! Env: `LAYA_URL` (default `http://localhost:8000`); Laya rows are skipped when it is down.
 
 use std::time::{Duration, Instant};
