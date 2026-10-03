@@ -1,4 +1,4 @@
-//! Request classifier eval (regex baseline).
+//! Request classifier eval — the scorer's harness, running the router's configured classifier.
 //!
 //! Run:
 //!   EVAL_SET=/tmp/classifier-eval.json OUT=/tmp/classifier-out.jsonl \
@@ -6,34 +6,101 @@
 //!
 //! Reads cases from `EVAL_SET` and writes one JSONL line of outputs per case
 //! to `OUT`. It does not compute scores; our scorer does that.
+//!
+//! The backend is chosen exactly as in the router, by `REQUEST_CLASSIFIER`:
+//! - `regex` (default): the original vote counter; complexity is the neutral 3.
+//! - `laya`: the `laya-serve` sidecar at `LAYA_URL` (default `http://localhost:8000`), e.g.
+//!   `python -m pip install 'laya[serve]==0.3.24' && LAYA_MODELS=multilingual laya-serve`.
+//!   Any Laya failure falls back to regex for that case, never aborting the run;
+//!   `LAYA_TIMEOUT_MS` (default 30000 here — offline, not the router's budget).
+//!
+//! A case's optional `context` string is given to model-backed classifiers after the
+//! query — the request first, so a long context can never truncate the request away.
 use std::io::Write;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
-use nasiko_llm_router::routing::classify_request_type;
+use nasiko_llm_router::routing::laya::LayaClassifier;
+use nasiko_llm_router::routing::request_classifier::{ClassifierKind, STATE_CHARS};
+use nasiko_llm_router::routing::{ClassifierInput, RegexClassifier, RequestClassifier};
 
-fn main() {
+/// The classifier input for an eval case: the latest request first, then its context,
+/// bounded like the router's own `classify_input`.
+fn state(query: &str, context: Option<&str>) -> String {
+    let mut s = format!("Latest request:\n{}", clip(query, 1_000));
+    if let Some(ctx) = context.filter(|c| !c.trim().is_empty()) {
+        s.push_str("\n\nContext:\n");
+        s.push_str(ctx);
+    }
+    clip(&s, STATE_CHARS)
+}
+
+fn clip(text: &str, max_chars: usize) -> String {
+    text.chars().take(max_chars).collect()
+}
+
+#[tokio::main]
+async fn main() {
     let path = std::env::var("EVAL_SET").expect("set EVAL_SET to the eval JSON path");
     let out_path = std::env::var("OUT").unwrap_or_else(|_| "classifier-out.jsonl".into());
     let raw = std::fs::read_to_string(&path).expect("read EVAL_SET");
     let data: serde_json::Value = serde_json::from_str(&raw).expect("valid eval JSON");
     let examples = data["examples"].as_array().expect("examples array");
 
+    let label = std::env::var("REQUEST_CLASSIFIER").unwrap_or_default();
+    let classifier: Box<dyn RequestClassifier> = match ClassifierKind::from_label(&label) {
+        ClassifierKind::Regex => Box::new(RegexClassifier),
+        ClassifierKind::Laya => {
+            let url = std::env::var("LAYA_URL").unwrap_or_else(|_| "http://localhost:8000".into());
+            let timeout_ms = std::env::var("LAYA_TIMEOUT_MS")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(30_000);
+            let laya = LayaClassifier::new(
+                reqwest::Client::new(),
+                &url,
+                &std::env::var("LAYA_API_KEY").unwrap_or_default(),
+                Duration::from_millis(timeout_ms),
+            );
+            // Warm-up so the first case doesn't carry model load in its latency.
+            laya.classify(&ClassifierInput {
+                query: "hello",
+                state: "Latest request:\nhello",
+            })
+            .await;
+            Box::new(laya)
+        }
+    };
+
     let mut out = std::io::BufWriter::new(std::fs::File::create(&out_path).expect("create OUT"));
+    let mut fallbacks = 0usize;
     for example in examples {
         let id = example["id"].as_str().expect("id");
         let query = example["query"].as_str().expect("query");
-        // Baseline ignores context; replace with your RequestClassifier.
+        let state = state(query, example["context"].as_str());
         let started = Instant::now();
-        let request_type = classify_request_type(query);
+        let c = classifier
+            .classify(&ClassifierInput {
+                query,
+                state: &state,
+            })
+            .await;
         let latency_us = started.elapsed().as_micros() as u64;
+        if let Some(reason) = c.source.fallback_reason() {
+            fallbacks += 1;
+            eprintln!("{id}: classifier fell back to regex ({reason})");
+        }
         let line = serde_json::json!({
             "id": id,
-            "request_type": request_type.as_str(),
-            "complexity": serde_json::Value::Null,
-            "confidence": serde_json::Value::Null,
+            "request_type": c.request_type.as_str(),
+            "complexity": c.complexity,
+            "confidence": c.confidence,
             "latency_us": latency_us,
         });
         writeln!(out, "{line}").expect("write OUT");
     }
     out.flush().expect("flush OUT");
+    eprintln!(
+        "{} cases -> {out_path} ({fallbacks} fell back to regex)",
+        examples.len()
+    );
 }
