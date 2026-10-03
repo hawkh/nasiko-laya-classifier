@@ -18,6 +18,8 @@ use crate::ir::Message;
 pub enum ClassifierSource {
     Regex,
     Laya,
+    /// The in-process model ([`super::local_classifier::LocalClassifier`]).
+    Local,
     Fallback(&'static str),
 }
 
@@ -26,6 +28,7 @@ impl ClassifierSource {
         match self {
             ClassifierSource::Regex => "regex",
             ClassifierSource::Laya => "laya",
+            ClassifierSource::Local => "local",
             ClassifierSource::Fallback(_) => "fallback",
         }
     }
@@ -109,12 +112,14 @@ impl RequestClassifier for RegexClassifier {
 pub enum ClassifierKind {
     Regex,
     Laya,
+    Local,
 }
 
 impl ClassifierKind {
     pub fn from_label(label: &str) -> Self {
         match label.trim().to_ascii_lowercase().as_str() {
             "laya" => ClassifierKind::Laya,
+            "local" => ClassifierKind::Local,
             "" | "regex" => ClassifierKind::Regex,
             other => {
                 tracing::warn!(

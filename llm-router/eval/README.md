@@ -28,3 +28,17 @@ There are two stages:
 `report-dev.md` and `report-test.md` are the committed outputs of one run on a laptop CPU
 (WSL2). Laya's labels are deterministic for a given checkpoint revision; the latency figures
 are not, and they depend on the hardware.
+
+## In-process local classifier (`REQUEST_CLASSIFIER=local`)
+
+`train_local.py` trains the hashed n-gram model embedded at `assets/local_classifier.json` from
+`train-a.jsonl` + `train-b.jsonl` (552 rows). Features are computed by Rust
+(`examples/local_classifier_features.rs`), so training and serving cannot disagree. The trainer
+refuses to run if any `h4-validation.json` query near-duplicates a training query.
+
+`run_benchmark.sh` scores regex, local and (when reachable) Laya through the official
+`classifier_eval` harness on `h4-validation.json` (154 held-out, tagged by failure mode),
+`h4-public-sample.json` (the hackathon's 10 public examples) and `requests.jsonl`, and writes
+`benchmark-report.md`: accuracy, macro-F1, per-type F1, complexity exact/±1/MAE/hard recall,
+ECE/Brier, latency p50/p95/p99, per-tag accuracy vs regex, and the exact requests each backend
+fixes or breaks.

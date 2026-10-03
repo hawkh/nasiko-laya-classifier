@@ -28,6 +28,7 @@ pub mod classifier;
 // Private to `routing`: only `salience.rs` (a sibling module) uses it directly, via
 // `ClassifierSalienceGate`.
 pub mod laya;
+pub mod local_classifier;
 mod patterns;
 pub mod pricing_sync;
 pub mod registry;

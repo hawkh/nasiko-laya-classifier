@@ -164,6 +164,23 @@ fn build_request_classifier(
             );
             Arc::new(routing::RegexClassifier)
         }
+        ClassifierKind::Local => match routing::local_classifier::LocalClassifier::embedded() {
+            Ok(local) => {
+                tracing::info!(
+                    target: "nasiko::llm_router::startup",
+                    "llm-router: request classifier = local (in-process hashed n-gram model)"
+                );
+                Arc::new(local)
+            }
+            Err(error) => {
+                tracing::warn!(
+                    target: "nasiko::llm_router::startup",
+                    %error,
+                    "llm-router: embedded local classifier failed to load; using regex"
+                );
+                Arc::new(routing::RegexClassifier)
+            }
+        },
         ClassifierKind::Laya => {
             tracing::info!(
                 target: "nasiko::llm_router::startup",

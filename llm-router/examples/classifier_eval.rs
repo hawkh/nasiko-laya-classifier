@@ -9,6 +9,7 @@
 //!
 //! The backend is chosen exactly as in the router, by `REQUEST_CLASSIFIER`:
 //! - `regex` (default): the original vote counter; complexity is the neutral 3.
+//! - `local`: the in-process hashed n-gram model embedded in the binary (`assets/`).
 //! - `laya`: the `laya-serve` sidecar at `LAYA_URL` (default `http://localhost:8000`), e.g.
 //!   `python -m pip install 'laya[serve]==0.3.24' && LAYA_MODELS=multilingual laya-serve`.
 //!   Any Laya failure falls back to regex for that case, never aborting the run;
@@ -20,23 +21,9 @@ use std::io::Write;
 use std::time::{Duration, Instant};
 
 use nasiko_llm_router::routing::laya::LayaClassifier;
-use nasiko_llm_router::routing::request_classifier::{ClassifierKind, STATE_CHARS};
+use nasiko_llm_router::routing::local_classifier::{LocalClassifier, eval_state};
+use nasiko_llm_router::routing::request_classifier::ClassifierKind;
 use nasiko_llm_router::routing::{ClassifierInput, RegexClassifier, RequestClassifier};
-
-/// The classifier input for an eval case: the latest request first, then its context,
-/// bounded like the router's own `classify_input`.
-fn state(query: &str, context: Option<&str>) -> String {
-    let mut s = format!("Latest request:\n{}", clip(query, 1_000));
-    if let Some(ctx) = context.filter(|c| !c.trim().is_empty()) {
-        s.push_str("\n\nContext:\n");
-        s.push_str(ctx);
-    }
-    clip(&s, STATE_CHARS)
-}
-
-fn clip(text: &str, max_chars: usize) -> String {
-    text.chars().take(max_chars).collect()
-}
 
 #[tokio::main]
 async fn main() {
@@ -49,6 +36,9 @@ async fn main() {
     let label = std::env::var("REQUEST_CLASSIFIER").unwrap_or_default();
     let classifier: Box<dyn RequestClassifier> = match ClassifierKind::from_label(&label) {
         ClassifierKind::Regex => Box::new(RegexClassifier),
+        ClassifierKind::Local => {
+            Box::new(LocalClassifier::embedded().expect("load the embedded local model"))
+        }
         ClassifierKind::Laya => {
             let url = std::env::var("LAYA_URL").unwrap_or_else(|_| "http://localhost:8000".into());
             let timeout_ms = std::env::var("LAYA_TIMEOUT_MS")
@@ -76,7 +66,7 @@ async fn main() {
     for example in examples {
         let id = example["id"].as_str().expect("id");
         let query = example["query"].as_str().expect("query");
-        let state = state(query, example["context"].as_str());
+        let state = eval_state(query, example["context"].as_str());
         let started = Instant::now();
         let c = classifier
             .classify(&ClassifierInput {
