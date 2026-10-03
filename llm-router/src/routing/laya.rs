@@ -28,6 +28,8 @@ const BREAKER_THRESHOLD: u32 = 3;
 const BREAKER_COOLDOWN: Duration = Duration::from_secs(30);
 /// Tolerance on Laya's type probabilities summing to 1 (they are rounded to 4 places).
 const PROBABILITY_SUM_TOLERANCE: f64 = 0.01;
+/// One reported decimal-place unit allows tied choices in four-place wire probabilities.
+const CHOICE_PROBABILITY_TOLERANCE: f64 = 0.0001;
 
 /// Consecutive-failure circuit breaker. Closed: calls go through. After
 /// [`BREAKER_THRESHOLD`] transport failures in a row it opens for [`BREAKER_COOLDOWN`] and
@@ -47,6 +49,8 @@ pub struct LayaClassifier {
     api_key: String,
     timeout: Duration,
     breaker: Mutex<Breaker>,
+    strands: bool,
+    strands_type_only: bool,
     breaker_threshold: u32,
     breaker_cooldown: Duration,
 }
@@ -59,9 +63,34 @@ impl LayaClassifier {
             api_key: api_key.to_owned(),
             timeout,
             breaker: Mutex::new(Breaker::default()),
+            strands: false,
+            strands_type_only: false,
             breaker_threshold: BREAKER_THRESHOLD,
             breaker_cooldown: BREAKER_COOLDOWN,
         }
+    }
+
+    /// Strands Decider adapter with the shared rubric, validation and fallback policy.
+    pub fn for_strands(http: reqwest::Client, base_url: &str, timeout: Duration) -> Self {
+        Self {
+            strands: true,
+            ..Self::new(http, base_url, "", timeout)
+        }
+    }
+
+    /// Score only the request-type question. The Strands adapter replaces the neutral
+    /// complexity placeholder with the embedded local head; no second decoder pass is paid.
+    pub fn for_strands_type_only(http: reqwest::Client, base_url: &str, timeout: Duration) -> Self {
+        Self {
+            strands_type_only: true,
+            ..Self::for_strands(http, base_url, timeout)
+        }
+    }
+
+    /// Configure an authentication token for the sidecar or its reverse proxy.
+    pub fn with_api_key(mut self, api_key: &str) -> Self {
+        self.api_key = api_key.to_owned();
+        self
     }
 
     /// `Err("circuit_open")` while the breaker is open; otherwise the call may proceed.
@@ -85,7 +114,8 @@ impl LayaClassifier {
                             reason,
                             failures = breaker.failures,
                             cooldown_secs = self.breaker_cooldown.as_secs(),
-                            "laya: circuit open — classifying with regex until the cooldown passes"
+                            backend = if self.strands { "strands" } else { "laya" },
+                            "classifier: circuit open — classifying with regex until the cooldown passes"
                         );
                     }
                     breaker.open_until = Some(Instant::now() + self.breaker_cooldown);
@@ -95,7 +125,8 @@ impl LayaClassifier {
                 if breaker.open_until.is_some() {
                     tracing::info!(
                         target: "nasiko::llm_router::classifier",
-                        "laya: circuit closed — sidecar answering again"
+                        backend = if self.strands { "strands" } else { "laya" },
+                        "classifier: circuit closed — sidecar answering again"
                     );
                 }
                 *breaker = Breaker::default();
@@ -104,11 +135,32 @@ impl LayaClassifier {
     }
 
     async fn call(&self, state: &str) -> Result<Classification, &'static str> {
+        let mut request = request_body(state);
+        if self.strands {
+            // The upstream server selects its checkpoint at startup, not from this field.
+            request["model"] = json!("strands-decider-latest");
+        }
+        if self.strands_type_only {
+            request["questions"]
+                .as_object_mut()
+                .expect("question object")
+                .remove("complexity");
+        }
         let mut req = self
             .http
             .post(&self.url)
             .timeout(self.timeout)
-            .json(&request_body(state));
+            .json(&request);
+        if self.strands {
+            // The serial sidecar can reject already-expired queued work instead of
+            // continuing to delay later callers after a client has timed out.
+            if let Ok(now) = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
+                req = req.header(
+                    "X-Request-Deadline-Unix-Ms",
+                    (now + self.timeout).as_millis().to_string(),
+                );
+            }
+        }
         if !self.api_key.is_empty() {
             req = req.bearer_auth(&self.api_key);
         }
@@ -116,14 +168,31 @@ impl LayaClassifier {
         if !resp.status().is_success() {
             return Err("status");
         }
-        let body: Value = resp.json().await.map_err(|e| {
+        let mut body: Value = resp.json().await.map_err(|e| {
             if e.is_timeout() {
                 "timeout"
             } else {
                 "bad_response"
             }
         })?;
-        parse_answers(&body)
+        if self.strands {
+            // Strands' normalized max-probability confidence is not Laya's
+            // answer_confidence. Preserve the returned value without recalibrating it.
+            let answer = body
+                .pointer_mut("/answers/request_type")
+                .and_then(Value::as_object_mut)
+                .ok_or("bad_response")?;
+            let confidence = answer.get("confidence").cloned().ok_or("bad_response")?;
+            answer.insert("answer_confidence".into(), confidence);
+            if self.strands_type_only {
+                body["answers"]["complexity"] = json!({"score": 2.0, "confidence": 0.0});
+            }
+        }
+        let mut classification = parse_answers(&body)?;
+        if self.strands {
+            classification.source = ClassifierSource::Strands;
+        }
+        Ok(classification)
     }
 }
 
@@ -160,7 +229,7 @@ impl RequestClassifier for LayaClassifier {
 /// so Laya's `choice` and `probabilities` map back with [`RequestType::from_wire`].
 /// (`serde_json` serialises object keys in sorted order, so the criteria order Laya sees is
 /// fixed regardless of how they are written here.)
-pub(crate) fn request_body(state: &str) -> Value {
+pub fn request_body(state: &str) -> Value {
     json!({
         "state": state,
         "model": "multilingual",
@@ -232,6 +301,18 @@ pub(crate) fn parse_answers(body: &Value) -> Result<Classification, &'static str
     let complexity_confidence = unit_interval(&cx["confidence"])?;
     let request_type = RequestType::from_wire(choice).ok_or("unknown_label")?;
     let probabilities = type_probabilities(&rt["probabilities"])?;
+    let raw_probabilities = rt["probabilities"].as_object().ok_or("bad_response")?;
+    let selected_probability =
+        unit_interval(raw_probabilities.get(choice).ok_or("bad_response")?)?;
+    let maximum = raw_probabilities
+        .values()
+        .filter_map(Value::as_f64)
+        .fold(0.0, f64::max);
+    // Compare the validated wire values before renormalization, which could enlarge
+    // a rounding-sized difference when their reported sum is slightly below one.
+    if selected_probability + CHOICE_PROBABILITY_TOLERANCE + f64::EPSILON < maximum {
+        return Err("bad_response");
+    }
     if !(0.0..=4.0).contains(&level) {
         return Err("bad_score");
     }
@@ -320,6 +401,100 @@ mod tests {
         classify(&laya(&server.url(), 2_000)).await
     }
 
+    #[tokio::test]
+    async fn strands_type_only_sends_one_question_and_a_queue_deadline() {
+        let mut server = mockito::Server::new_async().await;
+        let mut expected = request_body(STATE);
+        expected["model"] = json!("strands-decider-latest");
+        expected["questions"]
+            .as_object_mut()
+            .unwrap()
+            .remove("complexity");
+        let mock = server
+            .mock("POST", "/v1/systemone")
+            .match_body(mockito::Matcher::Json(expected))
+            .match_header(
+                "x-request-deadline-unix-ms",
+                mockito::Matcher::Regex("^[0-9]+$".into()),
+            )
+            .with_header("content-type", "application/json")
+            .with_body(
+                json!({"answers": {"request_type": {
+                    "choice": "writing", "confidence": 0.65,
+                    "probabilities": {"writing": 0.7, "general": 0.05,
+                        "code_generation": 0.05, "code_understanding": 0.05,
+                        "technical_design": 0.05, "analytical_reasoning": 0.05,
+                        "factual_lookup": 0.05}
+                }}})
+                .to_string(),
+            )
+            .create_async()
+            .await;
+        let result = classify(&LayaClassifier::for_strands_type_only(
+            reqwest::Client::new(),
+            &server.url(),
+            Duration::from_secs(2),
+        ))
+        .await;
+        mock.assert_async().await;
+        assert_eq!(result.request_type, RequestType::Writing);
+        assert_eq!(result.source, ClassifierSource::Strands);
+        // The wrapper replaces this neutral placeholder with local complexity.
+        assert_eq!(result.complexity, 3);
+        assert_eq!(result.complexity_confidence, 0.0);
+    }
+
+    #[tokio::test]
+    async fn strands_wire_contract_and_invalid_answers() {
+        for (body, expected_reason) in [
+            (
+                json!({"answers": {
+                    "request_type": {"type": "choice", "choice": "writing", "probabilities": {"writing": 0.9, "general": 0.1}, "confidence": 0.8},
+                    "complexity": {"type": "score", "score": 1.2, "confidence": 0.7}
+                }}),
+                None,
+            ),
+            (
+                json!({"answers": {"request_type": "malformed"}}),
+                Some("bad_response"),
+            ),
+            (
+                json!({"answers": {
+                    "request_type": {"choice": "writing", "probabilities": {"writing": 1.0}, "answer_confidence": 0.9},
+                    "complexity": {"score": 1.0, "confidence": 0.7}
+                }}),
+                Some("bad_response"),
+            ),
+        ] {
+            let mut server = mockito::Server::new_async().await;
+            let request = server
+                .mock("POST", "/v1/systemone")
+                .match_body(mockito::Matcher::PartialJson(
+                    json!({"model": "strands-decider-latest", "state": STATE}),
+                ))
+                .with_header("content-type", "application/json")
+                .with_body(body.to_string())
+                .create_async()
+                .await;
+            let c = classify(&LayaClassifier::for_strands(
+                reqwest::Client::new(),
+                &server.url(),
+                Duration::from_secs(2),
+            ))
+            .await;
+            request.assert_async().await;
+            if let Some(reason) = expected_reason {
+                assert_fallback(&c, reason);
+            } else {
+                assert_eq!(c.source, ClassifierSource::Strands);
+                assert_eq!(c.request_type, RequestType::Writing);
+                assert_eq!(c.confidence, 0.8);
+                assert_eq!(c.complexity, 2);
+                assert_eq!(c.complexity_confidence, 0.7);
+            }
+        }
+    }
+
     fn assert_fallback(c: &Classification, reason: &'static str) {
         assert_eq!(c.source, ClassifierSource::Fallback(reason));
         assert_eq!(
@@ -398,6 +573,63 @@ mod tests {
         );
         assert_eq!(type_probabilities(&json!({})), Err("bad_score"));
         assert_eq!(type_probabilities(&json!(null)), Err("bad_response"));
+    }
+
+    #[test]
+    fn chosen_label_accepts_rounded_ties_before_renormalizing() {
+        for probabilities in [
+            json!({"writing": 0.5, "general": 0.5}),
+            json!({"writing": 0.4999, "general": 0.5}),
+            json!({"writing": 0.5, "general": 0.5001}),
+            json!({"writing": 1.0}),
+        ] {
+            let body: Value = serde_json::from_str(&answer_with(
+                "writing", 0.6, probabilities, 2.0,
+            ))
+            .unwrap();
+            let classification = parse_answers(&body).unwrap();
+            assert_eq!(classification.request_type, RequestType::Writing);
+            assert_eq!(classification.source, ClassifierSource::Laya);
+        }
+    }
+
+    #[tokio::test]
+    async fn absent_or_nonmaximal_choices_fall_back_without_opening_the_breaker() {
+        for probabilities in [
+            json!({"general": 1.0}),
+            json!({"writing": 0.2, "general": 0.8}),
+            json!({"writing": 0.4998, "general": 0.5001}),
+        ] {
+            let mut server = mockito::Server::new_async().await;
+            let mock = server
+                .mock("POST", "/v1/systemone")
+                .with_header("content-type", "application/json")
+                .with_body(answer_with("writing", 0.8, probabilities, 2.0))
+                .expect(BREAKER_THRESHOLD as usize + 1)
+                .create_async()
+                .await;
+            let classifier = laya(&server.url(), 2_000);
+            for _ in 0..=BREAKER_THRESHOLD {
+                assert_fallback(&classify(&classifier).await, "bad_response");
+            }
+            mock.assert_async().await;
+        }
+    }
+
+    #[tokio::test]
+    async fn raw_strands_rejects_choice_missing_from_its_distribution() {
+        let mut server = mockito::Server::new_async().await;
+        let mock = server
+            .mock("POST", "/v1/systemone")
+            .with_header("content-type", "application/json")
+            .with_body(answer_with("writing", 0.8, json!({"general": 1.0}), 2.0))
+            .create_async()
+            .await;
+        let classifier = LayaClassifier::for_strands(
+            reqwest::Client::new(), &server.url(), Duration::from_secs(2),
+        );
+        assert_fallback(&classify(&classifier).await, "bad_response");
+        mock.assert_async().await;
     }
 
     #[tokio::test]

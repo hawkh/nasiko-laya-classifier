@@ -151,7 +151,7 @@ impl LlmRouterCtx {
 /// Build the Level 3 request classifier from config. `laya` also fires a one-shot health
 /// probe for the startup log; it never blocks or fails startup — per-request fallback to
 /// regex is what keeps routing safe while the sidecar is down or still loading its model.
-fn build_request_classifier(
+pub fn build_request_classifier(
     cfg: &GatewayConfig,
     http: &reqwest::Client,
 ) -> Arc<dyn routing::RequestClassifier> {
@@ -181,6 +181,49 @@ fn build_request_classifier(
                 Arc::new(routing::RegexClassifier)
             }
         },
+        ClassifierKind::StrandsRaw => Arc::new(
+            routing::laya::LayaClassifier::for_strands(
+                http.clone(),
+                &cfg.strands_url,
+                Duration::from_millis(cfg.strands_timeout_ms),
+            )
+            .with_api_key(&cfg.strands_api_key),
+        ),
+        ClassifierKind::Strands | ClassifierKind::Hybrid => {
+            let remote = routing::laya::LayaClassifier::for_strands_type_only(
+                http.clone(),
+                &cfg.strands_url,
+                Duration::from_millis(cfg.strands_timeout_ms),
+            )
+            .with_api_key(&cfg.strands_api_key);
+            let optimized =
+                routing::local_classifier::LocalClassifier::embedded().and_then(|local| {
+                    routing::strands::StrandsClassifier::new(
+                        remote,
+                        local,
+                        routing::strands::StrandsClassifier::embedded_temperature()?,
+                    )
+                });
+            match optimized {
+                Ok(optimized)
+                    if ClassifierKind::from_label(&cfg.request_classifier)
+                        == ClassifierKind::Hybrid =>
+                {
+                    match routing::local_classifier::LocalClassifier::embedded() {
+                        Ok(local) => {
+                            Arc::new(routing::hybrid::HybridClassifier::new(local, optimized))
+                        }
+                        Err(_) => Arc::new(routing::RegexClassifier),
+                    }
+                }
+                Ok(optimized) => Arc::new(optimized),
+                Err(error) => {
+                    tracing::warn!(target: "nasiko::llm_router::startup", %error,
+                        "classifier: Strands adapter failed to load; using regex");
+                    Arc::new(routing::RegexClassifier)
+                }
+            }
+        }
         ClassifierKind::Laya => {
             tracing::info!(
                 target: "nasiko::llm_router::startup",

@@ -13,11 +13,13 @@ use super::classifier::{RequestType, classify_request_type_scored};
 use crate::ir::Message;
 
 /// Where a [`Classification`] came from. `Fallback` carries why the configured model
-/// backend could not answer — the classification itself is then the regex one.
+/// backend could not answer — the classification itself is then the regex one (or local in the hybrid).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ClassifierSource {
     Regex,
     Laya,
+    Strands,
+    HybridStrands,
     /// The in-process model ([`super::local_classifier::LocalClassifier`]).
     Local,
     Fallback(&'static str),
@@ -28,6 +30,8 @@ impl ClassifierSource {
         match self {
             ClassifierSource::Regex => "regex",
             ClassifierSource::Laya => "laya",
+            ClassifierSource::Strands => "strands",
+            ClassifierSource::HybridStrands => "hybrid_strands",
             ClassifierSource::Local => "local",
             ClassifierSource::Fallback(_) => "fallback",
         }
@@ -64,7 +68,22 @@ impl Classification {
     /// A model-backed answer too unsure to pin a session on. Regex never is — its fixed
     /// vote-count confidence is not a probability, and default routing must match main.
     pub fn is_low_confidence(&self) -> bool {
-        self.type_probabilities.is_some() && self.confidence < LOW_CONFIDENCE_FLOOR
+        let Some(probabilities) = &self.type_probabilities else {
+            return false;
+        };
+        if self.confidence < LOW_CONFIDENCE_FLOOR {
+            return true;
+        }
+        // Exposing a probability instead of native concentration must not silently
+        // weaken Strands' existing admission policy. Keep the probability-equivalent
+        // minimum as an additional conservative guard, without relabelling confidence.
+        matches!(
+            self.source,
+            ClassifierSource::Strands | ClassifierSource::HybridStrands
+        ) && probabilities
+            .iter()
+            .find(|(label, _)| *label == self.request_type)
+            .is_none_or(|(_, p)| *p < STRANDS_MIN_TYPE_PROBABILITY)
     }
 }
 
@@ -90,6 +109,10 @@ pub const NEUTRAL_LEVEL: f64 = 2.0;
 /// sampling the type from `type_probabilities`. `tests/classifier_benchmark.rs` reports
 /// the low-confidence rate and the accuracy on either side of the floor.
 pub const LOW_CONFIDENCE_FLOOR: f64 = 0.4;
+
+/// Probability equivalent of the original seven-option Strands concentration floor:
+/// `(7 * p_max - 1) / 6 >= 0.4`. Retains its admission policy when reporting probabilities.
+pub const STRANDS_MIN_TYPE_PROBABILITY: f64 = (1.0 + 6.0 * LOW_CONFIDENCE_FLOOR) / 7.0;
 
 /// Today's regex vote-counter, unchanged, wrapped in the seam.
 pub struct RegexClassifier;
@@ -127,6 +150,9 @@ pub enum ClassifierKind {
     Regex,
     Laya,
     Local,
+    Strands,
+    StrandsRaw,
+    Hybrid,
 }
 
 impl ClassifierKind {
@@ -134,6 +160,9 @@ impl ClassifierKind {
         match label.trim().to_ascii_lowercase().as_str() {
             "laya" => ClassifierKind::Laya,
             "local" => ClassifierKind::Local,
+            "strands" => ClassifierKind::Strands,
+            "strands_raw" => ClassifierKind::StrandsRaw,
+            "hybrid" => ClassifierKind::Hybrid,
             "" | "regex" => ClassifierKind::Regex,
             other => {
                 tracing::warn!(
@@ -208,6 +237,46 @@ mod tests {
             RegexClassifier::classify_query("hello there").confidence,
             0.3
         );
+    }
+
+    #[test]
+    fn strands_probability_confidence_preserves_native_admission_policy() {
+        for probability in [0.35, 0.4, 0.45, 0.48, 0.49, 0.55, 0.9] {
+            let mut c = RegexClassifier::classify_query("hello");
+            c.request_type = RequestType::Writing;
+            c.type_probabilities = Some(
+                [
+                    RequestType::CodeGeneration,
+                    RequestType::CodeUnderstanding,
+                    RequestType::TechnicalDesign,
+                    RequestType::AnalyticalReasoning,
+                    RequestType::Writing,
+                    RequestType::FactualLookup,
+                    RequestType::General,
+                ]
+                .into_iter()
+                .map(|label| {
+                    (
+                        label,
+                        if label == RequestType::Writing {
+                            probability
+                        } else {
+                            (1.0 - probability) / 6.0
+                        },
+                    )
+                })
+                .collect(),
+            );
+            c.confidence = probability;
+            let native_would_reject = (7.0 * probability - 1.0) / 6.0 < LOW_CONFIDENCE_FLOOR;
+            for source in [ClassifierSource::Strands, ClassifierSource::HybridStrands] {
+                c.source = source;
+                assert_eq!(c.is_low_confidence(), native_would_reject, "{probability}");
+            }
+            c.source = ClassifierSource::Local;
+            assert_eq!(c.is_low_confidence(), probability < LOW_CONFIDENCE_FLOOR);
+        }
+        assert!(!RegexClassifier::classify_query("hello").is_low_confidence());
     }
 
     #[test]

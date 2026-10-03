@@ -1,6 +1,7 @@
 //! Request-classifier benchmark, run by `cargo test` — regex vs. the in-process local model
-//! (vs. Laya, when `LAYA_URL` points at a reachable `laya-serve`), through the router's own
-//! code paths, on three labelled sets:
+//! (vs. Laya, when `LAYA_URL` points at a reachable `laya-serve`, and optimized/raw
+//! Strands when `STRANDS_URL` points at a ready sidecar), through the router's own code
+//! paths, on three labelled sets:
 //!
 //! - `eval/h4-validation.json` — 154 held-out requests, 22 per type, each tagged with the
 //!   failure mode it exercises (keyword traps, no keywords, multilingual, typos, ...).
@@ -22,21 +23,26 @@
 //! ```sh
 //! cargo test --release -p nasiko-llm-router --test classifier_benchmark -- --nocapture
 //! LAYA_URL=http://localhost:8000 cargo test --release ... # adds the Laya column
+//! STRANDS_URL=http://localhost:18099 cargo test --release ... # adds both Strands columns
+//! BENCH_PREDICTIONS=/tmp/bench-predictions cargo test --release ... # saves JSONL + SHA manifest
 //! ```
 
 use std::collections::BTreeMap;
 use std::fmt::Write as _;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use nasiko_llm_router::ir::Message;
 use nasiko_llm_router::routing::classifier::{CellMap, Tier, pick_tier, tier_cost};
 use nasiko_llm_router::routing::laya::{LayaClassifier, probe_health};
 use nasiko_llm_router::routing::local_classifier::{LocalClassifier, eval_state};
-use nasiko_llm_router::routing::request_classifier::classify_input;
+use nasiko_llm_router::routing::request_classifier::{LOW_CONFIDENCE_FLOOR, classify_input};
 use nasiko_llm_router::routing::{
-    Classification, ClassifierInput, RegexClassifier, RequestClassifier, RequestType,
+    Classification, ClassifierInput, ClassifierSource, RegexClassifier, RequestClassifier,
+    RequestType,
 };
+use nasiko_llm_router::{GatewayConfig, build_request_classifier};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 use serde_json::{Value, json};
@@ -142,14 +148,32 @@ fn load_requests() -> Vec<Case> {
         .collect()
 }
 
-async fn run(classifier: &dyn RequestClassifier, cases: &[Case]) -> Vec<Scored> {
+fn assert_backend_source(name: &str, id: &str, c: &Classification, expected: ClassifierSource) {
+    assert_eq!(
+        c.source.fallback_reason(),
+        None,
+        "{name} {id}: unexpected fallback must not be scored as a model answer"
+    );
+    assert_eq!(
+        c.source, expected,
+        "{name} {id}: classifier factory selected an unexpected backend"
+    );
+}
+
+async fn run(
+    name: &str,
+    classifier: &dyn RequestClassifier,
+    expected: ClassifierSource,
+    cases: &[Case],
+) -> Vec<Scored> {
     // Warm-up: lazily compiled regexes / model load / connection setup stay out of latency.
-    classifier
+    let warmup = classifier
         .classify(&ClassifierInput {
             query: "hello",
             state: "Latest request:\nhello",
         })
         .await;
+    assert_backend_source(name, "warmup", &warmup, expected);
     let mut out = Vec::with_capacity(cases.len());
     for (case_idx, case) in cases.iter().enumerate() {
         let started = Instant::now();
@@ -159,6 +183,7 @@ async fn run(classifier: &dyn RequestClassifier, cases: &[Case]) -> Vec<Scored> 
                 state: &case.state,
             })
             .await;
+        assert_backend_source(name, &case.id, &c, expected);
         out.push(Scored {
             case_idx,
             c,
@@ -187,9 +212,11 @@ struct Metrics {
     easy_to_cheapest: f64,
     by_tag: BTreeMap<String, (usize, usize)>,
     fallbacks: usize,
-    /// Share of requests below `LOW_CONFIDENCE_FLOOR` (served the configured model, unpinned).
+    /// Scalar confidence <0.4, before any backend-specific admission guard (regex exempt).
+    below_floor: f64,
+    /// Share rejected by the full admission policy (configured model, unpinned).
     low_confidence: f64,
-    /// Type accuracy on the requests the router does trust (at or above the floor).
+    /// Type accuracy on requests admitted by the full classifier policy.
     confident_accuracy: f64,
 }
 
@@ -312,6 +339,11 @@ fn metrics(cases: &[Case], scored: &[Scored]) -> Metrics {
         .iter()
         .filter(|s| s.c.source.fallback_reason().is_some())
         .count();
+    m.below_floor = scored
+        .iter()
+        .filter(|s| s.c.type_probabilities.is_some() && s.c.confidence < LOW_CONFIDENCE_FLOOR)
+        .count() as f64
+        / n;
     let confident: Vec<bool> = scored
         .iter()
         .zip(&correct)
@@ -364,6 +396,9 @@ fn report(out: &mut String, title: &str, cases: &[Case], results: &[(&str, Vec<S
         &[
             row("type accuracy", &|m| pct(m.accuracy)),
             row("type macro-F1", &|m| format!("{:.3}", m.macro_f1)),
+            row("scalar confidence <0.4 (regex exempt; diagnostic)", &|m| {
+                pct(m.below_floor)
+            }),
             row("low confidence → configured model, unpinned", &|m| {
                 pct(m.low_confidence)
             }),
@@ -478,14 +513,135 @@ async fn laya_backend() -> Option<LayaClassifier> {
     }
 }
 
+/// Use the production factory for both Strands modes, with the configured endpoint,
+/// authentication and deadline. A health response alone is not enough when a sidecar
+/// explicitly reports that its startup warm-up is incomplete.
+struct StrandsBackends {
+    optimized: Arc<dyn RequestClassifier>,
+    raw: Arc<dyn RequestClassifier>,
+    health: Value,
+    timeout_ms: u64,
+}
+
+/// SHA utilities are required only when the optional prediction export is requested.
+/// Argument arrays avoid shell interpolation, including for paths containing spaces.
+fn sha256(path: &Path) -> String {
+    for (program, args) in [("shasum", vec!["-a", "256"]), ("sha256sum", vec![])] {
+        let result = std::process::Command::new(program)
+            .args(args)
+            .arg(path)
+            .output();
+        if let Ok(result) = result
+            && result.status.success()
+            && let Ok(stdout) = String::from_utf8(result.stdout)
+            && let Some(hash) = stdout.split_whitespace().next()
+            && hash.len() == 64
+            && hash.bytes().all(|b| b.is_ascii_hexdigit())
+        {
+            return hash.to_ascii_lowercase();
+        }
+    }
+    panic!(
+        "BENCH_PREDICTIONS needs shasum or sha256sum to hash {}",
+        path.display()
+    );
+}
+
+/// Persist model outputs without changing labels, so probability/admission diagnostics
+/// can be recomputed without another expensive inference pass.
+fn save_predictions(
+    directory: &Path,
+    set: usize,
+    name: &str,
+    cases: &[Case],
+    scored: &[Scored],
+) -> PathBuf {
+    use std::io::Write as _;
+    let path = directory.join(format!("{set}-{name}.jsonl"));
+    let mut file =
+        std::io::BufWriter::new(std::fs::File::create(&path).expect("create predictions"));
+    for s in scored {
+        let probabilities = s.c.type_probabilities.as_ref().map(|probabilities| {
+            probabilities
+                .iter()
+                .map(|(label, p)| (label.as_str().to_string(), json!(p)))
+                .collect::<serde_json::Map<String, Value>>()
+        });
+        let row = json!({
+            "id": cases[s.case_idx].id,
+            "backend": name,
+            "request_type": s.c.request_type.as_str(),
+            "type_probabilities": probabilities,
+            "complexity": s.c.complexity,
+            "complexity_level": s.c.complexity_level,
+            "complexity_confidence": s.c.complexity_confidence,
+            "confidence": s.c.confidence,
+            "low_confidence": s.c.is_low_confidence(),
+            "source": s.c.source.as_str(),
+            "fallback_reason": s.c.source.fallback_reason(),
+            "latency_us": s.latency.as_micros() as u64,
+        });
+        writeln!(file, "{row}").expect("write predictions");
+    }
+    file.flush().expect("flush predictions");
+    path
+}
+
+async fn strands_backends() -> Option<StrandsBackends> {
+    let url = std::env::var("STRANDS_URL").ok()?;
+    let http = reqwest::Client::new();
+    let health = match probe_health(&http, &url).await {
+        Ok(health) if health["ready"].as_bool() != Some(false) => health,
+        Ok(_) => {
+            eprintln!("STRANDS_URL={url} is not ready; omitting both Strands backends");
+            return None;
+        }
+        Err(error) => {
+            eprintln!("STRANDS_URL={url} not reachable ({error}); omitting both Strands backends");
+            return None;
+        }
+    };
+    let mut config = GatewayConfig::from_env();
+    config.strands_url = url;
+    config.request_classifier = "strands".into();
+    let optimized = build_request_classifier(&config, &http);
+    config.request_classifier = "strands_raw".into();
+    let raw = build_request_classifier(&config, &http);
+    Some(StrandsBackends {
+        optimized,
+        raw,
+        health,
+        timeout_ms: config.strands_timeout_ms,
+    })
+}
+
 #[tokio::test]
 async fn classifier_benchmark() {
     let local = LocalClassifier::embedded().expect("embedded local model");
     let laya = laya_backend().await;
-    let mut backends: Vec<(&str, &dyn RequestClassifier)> =
-        vec![("regex", &RegexClassifier), ("local", &local)];
+    let strands = strands_backends().await;
+    let predictions_dir = std::env::var("BENCH_PREDICTIONS").ok().map(PathBuf::from);
+    if let Some(directory) = &predictions_dir {
+        std::fs::create_dir_all(directory).expect("create BENCH_PREDICTIONS directory");
+    }
+    let mut backends: Vec<(&str, &dyn RequestClassifier, ClassifierSource)> = vec![
+        ("regex", &RegexClassifier, ClassifierSource::Regex),
+        ("local", &local, ClassifierSource::Local),
+    ];
     if let Some(laya) = &laya {
-        backends.push(("laya", laya));
+        backends.push(("laya", laya, ClassifierSource::Laya));
+    }
+    if let Some(strands) = &strands {
+        backends.push((
+            "strands_raw",
+            strands.raw.as_ref(),
+            ClassifierSource::Strands,
+        ));
+        backends.push((
+            "strands",
+            strands.optimized.as_ref(),
+            ClassifierSource::Strands,
+        ));
     }
 
     let sets = [
@@ -502,16 +658,96 @@ async fn classifier_benchmark() {
             "Release"
         }
     );
+    out.push_str(
+        "Routing columns simulate the tier sampler for every classification, including \
+         low-confidence cases. The configured-model abstention rate is reported separately; \
+         configured-model cost and downstream answer quality are not measured here.\n\n",
+    );
+    if let Some(strands) = &strands {
+        let health = &strands.health;
+        let _ = writeln!(
+            out,
+            "Strands endpoint model: `{}`; device: `{}`; ready: `{}`. \
+             Both backends use the runtime factory with a {} ms timeout. \
+             `strands_raw` asks both questions and reports native concentration confidence. \
+             `strands` asks only type, reports selected-label probability using the \
+             checked-in temperature asset (identity when training-only sharpening is \
+             rejected), and takes complexity from the embedded local model. \
+             Confidence semantics differ, so their ECE/Brier values are not a comparison \
+             of two probabilities with the same meaning.\n",
+            health["model"]
+                .as_str()
+                .or_else(|| health["checkpoint"].as_str())
+                .unwrap_or("unspecified"),
+            health["device"].as_str().unwrap_or("unspecified"),
+            health["ready"],
+            strands.timeout_ms,
+        );
+    }
     let mut all = Vec::new();
-    for (title, cases) in &sets {
+    let mut prediction_files = Vec::new();
+    for (set, (title, cases)) in sets.iter().enumerate() {
         let mut results = Vec::new();
-        for (name, backend) in &backends {
-            let scored = run(*backend, cases).await;
+        for (name, backend, source) in &backends {
+            let scored = run(name, *backend, *source, cases).await;
             let m = metrics(cases, &scored);
+            if let Some(directory) = &predictions_dir {
+                let path = save_predictions(directory, set, name, cases, &scored);
+                prediction_files.push(json!({
+                    "set": title,
+                    "backend": name,
+                    "file": path.file_name().expect("prediction filename").to_string_lossy(),
+                    "sha256": sha256(&path),
+                    "cases": scored.len(),
+                }));
+            }
+            eprintln!(
+                "{title}: {name} {} cases; accuracy {}; p95 {}; no inference fallbacks",
+                scored.len(),
+                pct(m.accuracy),
+                us(m.p95_us),
+            );
             results.push((*name, scored, m));
         }
         report(&mut out, title, cases, &results);
         all.push(results);
+    }
+    if let Some(directory) = &predictions_dir {
+        let calibration = directory.join("strands-calibration.json");
+        std::fs::write(
+            &calibration,
+            include_str!("../assets/strands_calibration.json"),
+        )
+        .expect("write compiled calibration asset");
+        let binary = std::env::current_exe().expect("benchmark binary path");
+        let mut fixtures = serde_json::Map::new();
+        for name in [
+            "h4-validation.json",
+            "h4-public-sample.json",
+            "requests.jsonl",
+        ] {
+            fixtures.insert(name.into(), json!(sha256(&eval_path(name))));
+        }
+        let source =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/classifier_benchmark.rs");
+        let manifest = json!({
+            "schema": "classifier-benchmark-predictions@v1",
+            "routing_seeds": SEEDS,
+            "tier_cost_units": [15.0, 3.0, 0.8],
+            "routing_scope": "cold-start pick_tier simulation on every classification; configured-model abstention measured separately",
+            "binary": {"path": binary, "sha256": sha256(&binary)},
+            "benchmark_source_sha256": sha256(&source),
+            "fixtures_sha256": fixtures,
+            "compiled_calibration_sha256": sha256(&calibration),
+            "strands_timeout_ms": strands.as_ref().map(|s| s.timeout_ms),
+            "strands_health": strands.as_ref().map(|s| &s.health),
+            "prediction_files": prediction_files,
+        });
+        std::fs::write(
+            directory.join("manifest.json"),
+            serde_json::to_string_pretty(&manifest).expect("serialize prediction manifest"),
+        )
+        .expect("write prediction manifest");
     }
     println!("{out}");
     if let Ok(path) = std::env::var("BENCH_REPORT") {

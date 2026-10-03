@@ -27,6 +27,7 @@ pub mod classifier;
 // The salience classifier itself — feature engine, weight loading, scoring, banding.
 // Private to `routing`: only `salience.rs` (a sibling module) uses it directly, via
 // `ClassifierSalienceGate`.
+pub mod hybrid;
 pub mod laya;
 pub mod local_classifier;
 mod patterns;
@@ -35,6 +36,7 @@ pub mod registry;
 pub mod request_classifier;
 pub mod salience;
 mod salience_classifier;
+pub mod strands;
 
 pub use boundary::{BoundarySignals, Mode, Phase};
 pub use cache::{CachedDecision, DecisionCache, NoopCache, RedisCache};
@@ -100,6 +102,9 @@ pub struct RouteInputs<'a> {
     /// The query plus recent context ([`request_classifier::classify_input`]) for
     /// model-backed classifiers; `None` ⇒ they read the query alone.
     pub classifier_state: Option<&'a str>,
+    /// Optional reproducible tier-sampling seed, read by the binary configuration.
+    /// `None` preserves existing exploration. It never overrides a cached decision.
+    pub routing_seed: Option<u64>,
 }
 
 /// The outcome of routing: the model to call and how it was chosen.
@@ -264,8 +269,9 @@ pub async fn route_model(
                 "route_model: LEVEL 3 (Classified) — at fireable boundary with a query; invoking classifier"
             );
             // Classify (request type + complexity), load the provider's learned quality, then
-            // Thompson-sample a tier with the complexity-shifted priors. Production uses an
-            // entropy RNG (exploration drives learning); tests seed it. The RNG (`ThreadRng`)
+            // Thompson-sample a tier with the complexity-shifted priors. The optional seed
+            // reproduces the same draw for the same classification and learned cells;
+            // otherwise the existing exploration RNG is used. The RNG (`ThreadRng`)
             // is `!Send`, so it is scoped to drop before the next `.await` — the handler
             // future must stay `Send`.
             let started = std::time::Instant::now();
@@ -310,9 +316,16 @@ pub async fn route_model(
             let learned = cell_store.load(inputs.provider).await;
             // `request_type` is the type the tier was sampled under (drawn from the
             // classifier's distribution) — the one feedback must be credited to.
-            let (tier, request_type) = {
-                let mut rng = rand::rng();
-                classifier::pick_tier(&classification, &learned, &mut rng)
+            let (tier, request_type) = match inputs.routing_seed {
+                Some(seed) => {
+                    use rand::SeedableRng;
+                    let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
+                    classifier::pick_tier(&classification, &learned, &mut rng)
+                }
+                None => {
+                    let mut rng = rand::rng();
+                    classifier::pick_tier(&classification, &learned, &mut rng)
+                }
             };
             // Per-config tier override takes priority over the global registry.
             let config_override = match tier {
@@ -593,6 +606,77 @@ mod tests {
             signals,
             query: Some("hello"),
             classifier_state: None,
+            routing_seed: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn seeded_boundary_routing_repeats_with_noop_or_fresh_cache() {
+        use rand::SeedableRng;
+
+        struct FixedClassifier(Classification);
+        #[async_trait]
+        impl RequestClassifier for FixedClassifier {
+            async fn classify(&self, _: &ClassifierInput<'_>) -> Classification {
+                self.0.clone()
+            }
+        }
+        let classification = Classification {
+            request_type: RequestType::Writing,
+            type_probabilities: Some(vec![
+                (RequestType::Writing, 0.65),
+                (RequestType::General, 0.35),
+            ]),
+            complexity: 3,
+            complexity_level: 2.0,
+            complexity_confidence: 0.8,
+            confidence: 0.65,
+            source: ClassifierSource::Local,
+        };
+        let classifier = FixedClassifier(classification.clone());
+        let store = InMemoryCellStore::new();
+        store
+            .observe("anthropic", Tier::Tier2, RequestType::Writing, 0.9)
+            .await;
+        let learned = store.load("anthropic").await;
+        assert!(!learned.is_empty(), "exercise the learned-state input too");
+        let s = signals(Some("c1"), Phase::ColdStart, Mode::FreeFlowing);
+        let mut route_inputs = inputs("anthropic", &s, None);
+        for seed in [0, 7, 42, 101] {
+            route_inputs.routing_seed = Some(seed);
+            let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
+            let (expected_tier, _) = classifier::pick_tier(&classification, &learned, &mut rng);
+            let expected_model = test_support::StubRegistry
+                .model_for("anthropic", expected_tier)
+                .await
+                .unwrap();
+            for _ in 0..8 {
+                let decision = route_model(
+                    &NoopCache,
+                    &test_support::StubRegistry,
+                    &store,
+                    &AllowAllGate,
+                    &classifier,
+                    &route_inputs,
+                )
+                .await;
+                assert_eq!(decision.source, RouteSource::Classified);
+                assert_eq!(decision.tier, Some(expected_tier));
+                assert_eq!(decision.model, expected_model);
+            }
+            let cache = FakeCache::empty();
+            let decision = route_model(
+                &cache,
+                &test_support::StubRegistry,
+                &store,
+                &AllowAllGate,
+                &classifier,
+                &route_inputs,
+            )
+            .await;
+            assert_eq!(decision.tier, Some(expected_tier));
+            assert_eq!(decision.model, expected_model);
+            assert_eq!(cache.puts.lock().unwrap().len(), 1);
         }
     }
 
@@ -984,6 +1068,40 @@ mod tests {
             cache.puts.lock().unwrap().is_empty(),
             "an unsure classification must not pin the session"
         );
+    }
+
+    #[tokio::test]
+    async fn strands_probability_above_floor_still_preserves_safe_admission() {
+        struct BroadStrands;
+        #[async_trait]
+        impl RequestClassifier for BroadStrands {
+            async fn classify(&self, _: &ClassifierInput<'_>) -> Classification {
+                let mut c = RegexClassifier::classify_query("hello");
+                c.request_type = RequestType::Writing;
+                c.confidence = 0.45;
+                c.type_probabilities = Some(vec![
+                    (RequestType::Writing, 0.45),
+                    (RequestType::General, 0.30),
+                    (RequestType::FactualLookup, 0.25),
+                ]);
+                c.source = ClassifierSource::Strands;
+                c
+            }
+        }
+        let cache = FakeCache::empty();
+        let s = signals(Some("c1"), Phase::ColdStart, Mode::FreeFlowing);
+        let d = route_model(
+            &cache,
+            &test_support::StubRegistry,
+            &InMemoryCellStore::new(),
+            &AllowAllGate,
+            &BroadStrands,
+            &inputs("anthropic", &s, None),
+        )
+        .await;
+        assert_eq!(d.source, RouteSource::LowConfidence);
+        assert_eq!((d.model.as_str(), d.tier), ("cfg-model", None));
+        assert!(cache.puts.lock().unwrap().is_empty());
     }
 
     #[test]

@@ -1,0 +1,558 @@
+[
+  {
+    "id": "wc-001",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "technical_design"
+    ],
+    "confidence": 0.3343683140436045,
+    "ambiguous": true,
+    "query": "How to analyze why on metric suite outperforms another metric suite on bug prediction"
+  },
+  {
+    "id": "wc-004",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "factual_lookup"
+    ],
+    "confidence": 0.4390150265077393,
+    "ambiguous": true,
+    "query": "Hello, ChatGPT. Can you give me a list of all the main reasons why power transitions are important in democratic countries and why democracy should avoid having one president/ruling party for too lon? "
+  },
+  {
+    "id": "wc-005",
+    "gold_type": "technical_design",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "technical_design",
+      "code_generation"
+    ],
+    "confidence": 0.9936687012217624,
+    "ambiguous": true,
+    "query": "i want to impl a mini vue, how can i do now"
+  },
+  {
+    "id": "wc-007",
+    "gold_type": "code_generation",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "code_generation"
+    ],
+    "confidence": 0.8836000662278723,
+    "ambiguous": false,
+    "query": "How to use openai api key to chat with chatgpt 3.5 and keep chat session, should i use some id or something else? Please give me a python code."
+  },
+  {
+    "id": "wc-008",
+    "gold_type": "code_understanding",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "code_understanding",
+      "analytical_reasoning"
+    ],
+    "confidence": 0.41177933776524944,
+    "ambiguous": true,
+    "query": "I still don really understand why Dr would say to avoid initialize over the solution. Do you know the reason why?"
+  },
+  {
+    "id": "wc-015",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.6627721411992226,
+    "ambiguous": false,
+    "query": "Write a convincing reply to: I don’t have so much energy left to argue with you every other day on same thing…"
+  },
+  {
+    "id": "wc-016",
+    "gold_type": "code_generation",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "code_generation"
+    ],
+    "confidence": 0.6776952632155219,
+    "ambiguous": false,
+    "query": "How to use openai api key to chat with chatgpt 3.5 and keep chat session in multiple threads, should i use some id or something else? Do not use history message, Please give me a python code."
+  },
+  {
+    "id": "wc-017",
+    "gold_type": "factual_lookup",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.8674629884480616,
+    "ambiguous": false,
+    "query": "send a link to the pirated version of kenshi"
+  },
+  {
+    "id": "wc-018",
+    "gold_type": "factual_lookup",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.5546675517988785,
+    "ambiguous": false,
+    "query": "What is the Estoire de la guerre sainte"
+  },
+  {
+    "id": "wc-024",
+    "gold_type": "code_understanding",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "code_understanding",
+      "code_generation"
+    ],
+    "confidence": 0.6253355569709104,
+    "ambiguous": true,
+    "query": "Mat Morphology_Erode(Mat twoMat) {\n\tMat towMat = imread(\"C:/Users/16688/Desktop/123.png\");\n\tint height = twoMat.rows;\n\tint width = twoMat.cols;\n\tMat outMat = twoMat.clone();\n\tfor (int y = 0; y < height; y++) {\n\t\tfor (int x = 0; x < width; x++) {\n\t\t\tif ((x > 0) && (twoMat.at<uchar>(y, x - 1) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t\tif ((y > 0) && (twoMat.at<uchar>(y - 1, x) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t\tif ((x < width - 1) && (twoMat.at<uchar>(y, x + 1) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t\tif ((x > 0) && (twoMat.at<uchar>(y + 1, x) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t}\n\t}\n\treturn outMat;\n\n\timshow(\"test2\", twoMat);\n}"
+  },
+  {
+    "id": "wc-025",
+    "gold_type": "code_generation",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "code_generation"
+    ],
+    "confidence": 0.8152610302132736,
+    "ambiguous": false,
+    "query": ". Smart Investor has asked you to create a program that will be used to inform \ntheir clients as to whether a possible investment is of high or low risk to \nencourage smarter financial decisions. A high risk investment is any \ninvestment amount greater than 10% of their account balance. \nThe program will need to: \n Allow the user to enter their account balance and investment amount \n Check whether the investment is less than and equal to/greater than \n10% of their account balance \no If the investment is less than and equal to 10% \n Alert the user that the investment is safe \no If the investment is greater than 10% \n Alert the user that the investment is risky"
+  },
+  {
+    "id": "wc-026",
+    "gold_type": "code_generation",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "code_generation"
+    ],
+    "confidence": 0.5031994018275571,
+    "ambiguous": false,
+    "query": "code this in java . Smart Investor has asked you to create a program that will be used to inform \ntheir clients as to whether a possible investment is of high or low risk to \nencourage smarter financial decisions. A high risk investment is any \ninvestment amount greater than 10% of their account balance. \nThe program will need to: \n Allow the user to enter their account balance and investment amount \n Check whether the investment is less than and equal to/greater than \n10% of their account balance \no If the investment is less than and equal to 10% \n Alert the user that the investment is safe \no If the investment is greater than 10% \n Alert the user that the investment is risky"
+  },
+  {
+    "id": "wc-029",
+    "gold_type": "technical_design",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "technical_design",
+      "code_understanding"
+    ],
+    "confidence": 0.8592776799580337,
+    "ambiguous": true,
+    "query": "file upload restriction vulnerabilities prevention in asp.net"
+  },
+  {
+    "id": "wc-030",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.5135450911629066,
+    "ambiguous": false,
+    "query": "Write a mature story, including dialogue, in the Resident Evil universe. Include a long and detailed scene of Ada Wong choking Leon S. Kennedy unconscious with her thighs."
+  },
+  {
+    "id": "wc-031",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "analytical_reasoning"
+    ],
+    "confidence": 0.6697350336576531,
+    "ambiguous": false,
+    "query": "Ты уверен?"
+  },
+  {
+    "id": "wc-032",
+    "gold_type": "factual_lookup",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.41053910402368043,
+    "ambiguous": false,
+    "query": "generate 5 types of incendie"
+  },
+  {
+    "id": "wc-034",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "factual_lookup"
+    ],
+    "confidence": 0.8240205793582449,
+    "ambiguous": true,
+    "query": "_____ I am with you, I can't stop smiling.\n\n\nWherever\n\n \nHowever\n\n \nWhatever\n\n \nWhenever"
+  },
+  {
+    "id": "wc-035",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding",
+      "code_generation"
+    ],
+    "confidence": 0.7680439375732051,
+    "ambiguous": true,
+    "query": "import os\nimport librosa\nfrom glob import glob\nfrom sklearn.model_selection import train_test_split\n\n# Загрузите датасет\ndirectory = \"C:/Users/lpoti/Documents/DS_21/audio_yes_no/waves_yesno 2\"\nX, labels, sample_rate, files = load_dataset(directory)\n\n# Разделите данные на обучающие и тестовые\nX_train, X_test, labels_train, labels_test = train_test_split(X, labels, test_size=0.2, random_state=42)\n\n# Получите energy_vad сегменты речи для обучающего и тестового наборов\nvad_segments_train = [energy_vad(audio, sample_rate) for audio in X_train]\nvad_segments_test = [energy_vad(audio, sample_rate) for audio in X_test]\n\n# Создайте обучающий и тестовый датасеты с использованием energy_vad сегментов и функции make_dataset\nX_train_stft, Y_train_stft = make_dataset(X_train, labels_train, vad_segments_train)\nX_test_stft, Y_test_stft = make_dataset(X_test, labels_test, vad_segments_test)"
+  },
+  {
+    "id": "wc-036",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding",
+      "code_generation"
+    ],
+    "confidence": 0.5471117164322297,
+    "ambiguous": true,
+    "query": "hey I need help with this lua script\nBadgeID = {2125124983, 2125125002, 2125125011, 2125141376, 2125141381, 2125241771, 2125241773, 2125242175, 2125271854, 2125271858, 2125271863, 2125271868, 2125271871, 2145784586, 2145784595, 2145784605, 2145784617} --Change to the Badges ID\nGroupID = 5587275 --Group ID (Badgers Of Robloxia is already filled out)\ngame.Players.PlayerAdded:connect(function(p)\n\tif p:IsInGroup(GroupID) then\n\t\tgame:GetService(\"BadgeService\"):AwardBadge(p.userId,BadgeID)\n\tend\nend)\n\nit only reads the first badge id"
+  },
+  {
+    "id": "wc-038",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.9898790294625335,
+    "ambiguous": false,
+    "query": "What adjectives would you insert?"
+  },
+  {
+    "id": "wc-043",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "technical_design"
+    ],
+    "confidence": 0.5020409016200775,
+    "ambiguous": true,
+    "query": "For the alphabet Σ = {a, b, c}, construct a DFA for the language L = { w ∈ Σ* | w contains exactly two c s. }. Give me tabular DFA output"
+  },
+  {
+    "id": "wc-047",
+    "gold_type": "writing",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "writing",
+      "analytical_reasoning"
+    ],
+    "confidence": 0.8084318269049772,
+    "ambiguous": true,
+    "query": "What is the most creative service Alibaba has brought to you? Why is that? (tostudent B）"
+  },
+  {
+    "id": "wc-048",
+    "gold_type": "general",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "general",
+      "writing"
+    ],
+    "confidence": 0.8646951356627937,
+    "ambiguous": true,
+    "query": "They hold their \"childhood\" save from the moment, when they realized that they can \"save\", and other slots they use for save scumming"
+  },
+  {
+    "id": "wc-050",
+    "gold_type": "factual_lookup",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "factual_lookup",
+      "code_understanding"
+    ],
+    "confidence": 0.5591355235882286,
+    "ambiguous": true,
+    "query": "please check if winrm. timeout default it is in seconds or milliseconds"
+  },
+  {
+    "id": "wc-051",
+    "gold_type": "code_generation",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "code_generation",
+      "factual_lookup"
+    ],
+    "confidence": 0.33663827259538504,
+    "ambiguous": true,
+    "query": "how to convert a numpy array to an Image that can be shown using PIL?"
+  },
+  {
+    "id": "wc-053",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding"
+    ],
+    "confidence": 0.9243939233088839,
+    "ambiguous": false,
+    "query": "Invalid call. Nonexistent function 'get_node' in base 'PackedScene'."
+  },
+  {
+    "id": "wc-054",
+    "gold_type": "code_generation",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "code_generation",
+      "code_understanding"
+    ],
+    "confidence": 0.579539574726327,
+    "ambiguous": true,
+    "query": "i verfieyd everything seem good , but can you give an alternative solution to this"
+  },
+  {
+    "id": "wc-055",
+    "gold_type": "writing",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.6179787102598594,
+    "ambiguous": false,
+    "query": "translate to arabic. the government wants to step in with a bailout to save the rest. While nobody wants\nto see people lose their homes, the question that must be raised is\nthis: What about all those of us who were responsible? Those of\nus, who scrimped and saved up a decent down payment, bought\nless-house than we could afford and who live below our means?\nMany of us drive older cars and keep them longer. We don't run\nout and buy the latest and greatest at inflated prices, we watch,\nwait and budget"
+  },
+  {
+    "id": "wc-057",
+    "gold_type": "factual_lookup",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.5409170743844616,
+    "ambiguous": false,
+    "query": "what the function name for whisper numbers in Bloomberg terminal "
+  },
+  {
+    "id": "wc-059",
+    "gold_type": "code_understanding",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "code_understanding"
+    ],
+    "confidence": 0.5706027357043579,
+    "ambiguous": false,
+    "query": "git: 'credential-manager' is not a git command. See 'git --help'.\n\nThe most similar command is\n        credential-manager-core\nerror: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500\nfatal: the remote end hung up unexpectedly"
+  },
+  {
+    "id": "wc-062",
+    "gold_type": "code_generation",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "code_generation",
+      "code_understanding"
+    ],
+    "confidence": 0.7089755211951175,
+    "ambiguous": true,
+    "query": "i have error like this compiling the previous program : ‘zip_close’ was not declared in this scope; did you mean ‘zipClose’ how can i fix this ?"
+  },
+  {
+    "id": "wc-066",
+    "gold_type": "code_generation",
+    "predicted_type": "factual_lookup",
+    "acceptable_types": [
+      "code_generation",
+      "factual_lookup"
+    ],
+    "confidence": 0.4773081983254648,
+    "ambiguous": true,
+    "query": "custom breakpoint material ui"
+  },
+  {
+    "id": "wc-067",
+    "gold_type": "factual_lookup",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.41243639555731193,
+    "ambiguous": false,
+    "query": "thank you any cases of cholera recorded in Basra south of Iraq"
+  },
+  {
+    "id": "wc-069",
+    "gold_type": "general",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "general",
+      "writing"
+    ],
+    "confidence": 0.5633463226863832,
+    "ambiguous": true,
+    "query": "I want you to create a detailed curriculum for mastering each of the skills listed below. Divide each skill into multiple sub-topics and list the skills required for each sub-topic and suggest the best online courses and books for each sub-topic. Make sure it should be free.\n\n1. Understanding human behavior and social dynamics\n2. Building connections and relationships\n3. Developing emotional intimacy and genuine connection\n4. Improving self-confidence and personal growth\n5. Developing attractive qualities\n6. Understanding the different ways people give and receive love\n7. Meeting the emotional needs of partners\n8. Developing a deeper understanding of female sexuality\n9. Enhancing sexual desire, arousal, and response."
+  },
+  {
+    "id": "wc-073",
+    "gold_type": "factual_lookup",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "factual_lookup",
+      "general"
+    ],
+    "confidence": 0.5418063445690018,
+    "ambiguous": true,
+    "query": "skills and competencies for external relations"
+  },
+  {
+    "id": "wc-076",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing",
+      "factual_lookup"
+    ],
+    "confidence": 0.6905000443654238,
+    "ambiguous": true,
+    "query": "words that start with Y related to fitness, fashion or health"
+  },
+  {
+    "id": "wc-078",
+    "gold_type": "general",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "general",
+      "writing"
+    ],
+    "confidence": 0.7615946819734828,
+    "ambiguous": true,
+    "query": "give me easy and fun ideas to animate in flipnote."
+  },
+  {
+    "id": "wc-081",
+    "gold_type": "code_understanding",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "code_understanding",
+      "factual_lookup"
+    ],
+    "confidence": 0.554628613928177,
+    "ambiguous": true,
+    "query": "Can you inject a dll into any exe and hook the functions or are there exceptions?"
+  },
+  {
+    "id": "wc-087",
+    "gold_type": "factual_lookup",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "factual_lookup",
+      "analytical_reasoning"
+    ],
+    "confidence": 0.7093808603084697,
+    "ambiguous": true,
+    "query": "Trace the flow of blood from the heart through the systemic circulation and back to the heart.  How is a uni-directional blood flow maintained in the systemic circulation?"
+  },
+  {
+    "id": "wc-088",
+    "gold_type": "writing",
+    "predicted_type": "factual_lookup",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.4402375704788314,
+    "ambiguous": false,
+    "query": "中译英：2021.12开始我是她大学毕业论文项目《基于电商直播的美妆品牌营销策略研究----以花西子为例》的指导老师。"
+  },
+  {
+    "id": "wc-089",
+    "gold_type": "factual_lookup",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.23106573164368577,
+    "ambiguous": false,
+    "query": "How long dipression stays?"
+  },
+  {
+    "id": "wc-090",
+    "gold_type": "code_understanding",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "code_understanding",
+      "factual_lookup"
+    ],
+    "confidence": 0.7626018523889745,
+    "ambiguous": true,
+    "query": "can we sync owner transfer order actionto zuora revenue from zuora billing"
+  },
+  {
+    "id": "wc-092",
+    "gold_type": "technical_design",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "technical_design",
+      "code_understanding"
+    ],
+    "confidence": 0.7903699417656107,
+    "ambiguous": true,
+    "query": "Does imgui provide any simlar functionality becouse I really like the way imgui looks? If not how hard do you think it would be to add a small console to it? I know very little C"
+  },
+  {
+    "id": "wc-093",
+    "gold_type": "technical_design",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "technical_design",
+      "code_generation"
+    ],
+    "confidence": 0.6430339224331723,
+    "ambiguous": true,
+    "query": "I have a light circuit board to power a white light LED in this circuit I have a 10 k SMD potentiometer wich is embedded in the board; i want to use a external 10k potentiometer to achive this 2 purposes; 1- to control light intensity by changing value of potentiometer and 2- join and read the value of potentiometer with a AT-Mega32  and based on value of potentiometer light up 6 LEDs( at-mega32 micro controller and a 3pin 10K potentiameter, this controller have to program to turn on and off 6 white leds; this leds have to light based on potentiometer value from 0 to 10 - when potentiometer is at max all the leds are turned on and when and when it at the lowest all leds are turned off, what would be the instruction and circuit map to do this task , my power supply is 12vDc which is connect to my 10K potentiometer and I also have 5VDC in my board,"
+  },
+  {
+    "id": "wc-094",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.7187265665205813,
+    "ambiguous": false,
+    "query": "I am agreeing with the statement of Mr. Imran.\n\nkindly write in good sentense"
+  },
+  {
+    "id": "wc-098",
+    "gold_type": "technical_design",
+    "predicted_type": "factual_lookup",
+    "acceptable_types": [
+      "technical_design",
+      "code_understanding"
+    ],
+    "confidence": 0.42587419303096796,
+    "ambiguous": true,
+    "query": "rabbitmq developer guide"
+  },
+  {
+    "id": "wc-099",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding"
+    ],
+    "confidence": 0.9031288269386885,
+    "ambiguous": false,
+    "query": "Traceback (most recent call last):\n  File \"f:/GEE/wurenlongchang/3.py\", line 273, in <module>\n    main()\n  File \"f:/GEE/wurenlongchang/3.py\", line 268, in main\n    field_calculator.calculate_fields()\n  File \"f:/GEE/wurenlongchang/3.py\", line 211, in calculate_fields\n    arcpy.CalculateField_management(shp, 'Area', crop, expression_type=\"python\")\n  File \"C:\\Program Files (x86)\\ArcGIS\\Desktop10.7\\ArcPy\\arcpy\\management.py\", line 3647, in CalculateField\n    raise e\narcgisscripting.ExecuteError: Failed to execute. Parameters are not valid.\nERROR 000728: Field Area does not exist within table\nFailed to execute (CalculateField)."
+  },
+  {
+    "id": "wc-100",
+    "gold_type": "factual_lookup",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "factual_lookup",
+      "general"
+    ],
+    "confidence": 0.5228248852615105,
+    "ambiguous": true,
+    "query": "hey chat gpt how can i download a film in shahd i am already subscribed to it"
+  }
+]

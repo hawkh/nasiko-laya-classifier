@@ -489,6 +489,7 @@ pub(crate) async fn resolve_routed_request(
             signals: &boundary,
             query: signals.query.as_deref(),
             classifier_state: signals.classifier_state.as_deref(),
+            routing_seed: ctx.cfg.routing_seed,
         },
     )
     .await;

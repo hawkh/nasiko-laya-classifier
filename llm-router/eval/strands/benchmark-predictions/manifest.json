@@ -1,0 +1,146 @@
+{
+  "benchmark_source_sha256": "a6bce24f9fbfa16b6199204ea54a6c54d247bdffadcc63624784304cff95e98b",
+  "binary": {
+    "path": "/Users/gouravnss/personal/nasiko-laya-retrain/target/release/deps/classifier_benchmark-d5fd5b6ed94bdbe5",
+    "sha256": "67370be9d48fb53c3e244bf8d4aedbcb5284e50d02387dad65c2442daa45ba27"
+  },
+  "compiled_calibration_sha256": "d4f8e32ffb37346c2e56a811428e1a83718c899b0a74010042363dedb84f0f72",
+  "fixtures_sha256": {
+    "h4-public-sample.json": "50939f37dcc1f73cbeea400760777d6c8e2028b23522d90802ebbfcfa3d7d6ff",
+    "h4-validation.json": "e425b611252ba977db59d6bf8b298c03306891fb4ba8669d065e1bf504c4b090",
+    "requests.jsonl": "138563c6d5af683fc06c08ae630924b9182d9ea0b402430b57bec289f07c4fc3"
+  },
+  "prediction_files": [
+    {
+      "backend": "regex",
+      "cases": 154,
+      "file": "0-regex.jsonl",
+      "set": "Held-out validation",
+      "sha256": "8a7cba2f8b5081b8106391e5144a162c3e5743f4c3a004659ddb403428d79930"
+    },
+    {
+      "backend": "local",
+      "cases": 154,
+      "file": "0-local.jsonl",
+      "set": "Held-out validation",
+      "sha256": "38821d436c827b055bd17c30c4fa35b3f605a5446ff04e141cd751a0f9c67e4f"
+    },
+    {
+      "backend": "strands_raw",
+      "cases": 154,
+      "file": "0-strands_raw.jsonl",
+      "set": "Held-out validation",
+      "sha256": "426665c815f7d6ae263c9979fe7a1e29404e21222f17ebbbb06c62a0d2d0ce37"
+    },
+    {
+      "backend": "strands",
+      "cases": 154,
+      "file": "0-strands.jsonl",
+      "set": "Held-out validation",
+      "sha256": "d76215381ec0ccb85f8848eab9ad66075eece7e97565afce56638675169e5eb1"
+    },
+    {
+      "backend": "regex",
+      "cases": 10,
+      "file": "1-regex.jsonl",
+      "set": "Hackathon public sample",
+      "sha256": "be944fcbd3e07ea4c29ae87f88b891732cd916eefc476ca2c3f112c759dd1457"
+    },
+    {
+      "backend": "local",
+      "cases": 10,
+      "file": "1-local.jsonl",
+      "set": "Hackathon public sample",
+      "sha256": "6202f2c23f5c32adfc48458371cac7aa49f7c64457443e0082477b6094a3d0d6"
+    },
+    {
+      "backend": "strands_raw",
+      "cases": 10,
+      "file": "1-strands_raw.jsonl",
+      "set": "Hackathon public sample",
+      "sha256": "1d4f7becaa173e0603ae5639e3acc14bed4531001a0d33944e246023be556253"
+    },
+    {
+      "backend": "strands",
+      "cases": 10,
+      "file": "1-strands.jsonl",
+      "set": "Hackathon public sample",
+      "sha256": "04e17998e8b66de814094f7d6a10b2800590368ee8c1efdbd68bc44b13cded2d"
+    },
+    {
+      "backend": "regex",
+      "cases": 100,
+      "file": "2-regex.jsonl",
+      "set": "Labelled requests with chat history",
+      "sha256": "8f6ea3fa94a10f2c1b3d8d0234320134d7a628f16a34f25a908c11747d1c1885"
+    },
+    {
+      "backend": "local",
+      "cases": 100,
+      "file": "2-local.jsonl",
+      "set": "Labelled requests with chat history",
+      "sha256": "7fbc37b2eb49ff1541f0ec5df5b9da0e4684e86f3bd650b80286eaf8906feed6"
+    },
+    {
+      "backend": "strands_raw",
+      "cases": 100,
+      "file": "2-strands_raw.jsonl",
+      "set": "Labelled requests with chat history",
+      "sha256": "d382c02da22fb48c996930967cb2d45ca11d1c436e33d81ae3bf9893e3efdd4f"
+    },
+    {
+      "backend": "strands",
+      "cases": 100,
+      "file": "2-strands.jsonl",
+      "set": "Labelled requests with chat history",
+      "sha256": "05a38636de65677ea0a667fc0f20eab0e00ba2d4f4c7d48edf6c1dec1a88bc60"
+    }
+  ],
+  "routing_scope": "cold-start pick_tier simulation on every classification; configured-model abstention measured separately",
+  "routing_seeds": 50,
+  "schema": "classifier-benchmark-predictions@v1",
+  "strands_health": {
+    "base_model": "Qwen/Qwen3.5-2B-Base",
+    "base_model_path": "/Users/gouravnss/.cache/huggingface/hub/models--Qwen--Qwen3.5-2B-Base/snapshots/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+    "base_model_revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+    "cache_limit_bytes": 134217728,
+    "checkpoint": "/Users/gouravnss/.cache/huggingface/hub/models--StrandsAgents--strands-decider-2B-hobson-v19/snapshots/bb282d786bc251fd4e3068de3ada9ddbb38127cd",
+    "checkpoint_revision": "bb282d786bc251fd4e3068de3ada9ddbb38127cd",
+    "deadline_header": "X-Request-Deadline-Unix-Ms",
+    "device": "mlx",
+    "head_sha256": "daad0727152b6185447cee36f78230c144312feb7b19f02749b19645238b5287",
+    "load_ms": 27420.147374999942,
+    "max_batch": 1,
+    "max_length": 4096,
+    "model": "strands-decider-2B-hobson-v19-q4",
+    "prefix_cache": false,
+    "quantization_bits": 4,
+    "ready": true,
+    "ready_ms": 29708.603374998347,
+    "serial": true,
+    "status": "ok",
+    "warmup": [
+      {
+        "input_tokens": 177,
+        "latency_ms": 1768.9288749970729,
+        "profile": "configured_short",
+        "questions": 1
+      },
+      {
+        "input_tokens": 443,
+        "latency_ms": 512.3409580010048,
+        "profile": "configured_long",
+        "questions": 1
+      }
+    ],
+    "warmup_ms": 2288.407084000937,
+    "warmup_rubric": "client"
+  },
+  "strands_timeout_ms": 30000,
+  "tier_cost_units": [
+    15.0,
+    3.0,
+    0.8
+  ],
+  "benchmark_source_archive": "source-classifier-benchmark.rs"
+}

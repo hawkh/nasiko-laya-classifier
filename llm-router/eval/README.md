@@ -38,7 +38,8 @@ refuses to run if any `h4-validation.json` query near-duplicates a training quer
 
 The benchmark is a cargo integration test, `tests/classifier_benchmark.rs`, so it runs with
 the rest of the suite and in CI (`.github/workflows/llm-router-classifier.yml`). It scores
-regex, local and (when `LAYA_URL` reaches a `laya-serve`) Laya through the router's own code on
+regex, local, (when `LAYA_URL` reaches a `laya-serve`) Laya, and
+(when `STRANDS_URL` reaches a ready sidecar) raw/optimized Strands through the router's own code on
 `h4-validation.json` (154 held-out, tagged by failure mode), `h4-public-sample.json` (the
 hackathon's 10 public examples, byte-identical to
 https://registry.nasiko.dev/r/nasiko/classifier-eval) and `requests.jsonl` (classified from real chat history via
@@ -53,7 +54,12 @@ LAYA_URL=http://localhost:8000 BENCH_REPORT=eval/benchmark-report.md   cargo tes
 ```
 
 `benchmark-report.md` records the available backends for the latest run. Set `LAYA_URL`
-only when the sidecar is running; without it the benchmark compares regex and local.
+only when the sidecar is running. Set `STRANDS_URL` to include both Strands modes;
+its benchmark requests use `STRANDS_TIMEOUT_MS` (default 1500). The committed
+Strands quality comparison uses an explicit 30000 ms offline timeout and fails on
+any unexpected source/fallback. `BENCH_PREDICTIONS` saves predictions and their SHA
+manifest for rescoring. Without endpoint variables the benchmark compares regex
+and local.
 
 ### Retraining
 
@@ -73,3 +79,20 @@ Latest training environment: macOS arm64, Python 3.13, NumPy 2.2.6, SciPy 1.17.1
 scikit-learn 1.8.0. `OPENBLAS_NUM_THREADS`, `OMP_NUM_THREADS`, and
 `VECLIB_MAXIMUM_THREADS` were set to 1. The retained confidence floor is 0.4; see
 `../../PITCH.md` for coverage and the public-sample regression.
+
+## Optimized Strands
+
+`REQUEST_CLASSIFIER=strands` combines one remote Strands type question with the
+embedded retrained complexity head. `strands_raw` retains the native two-question
+baseline. The optimized backend reports selected-label probability confidence,
+while preserving the native 0.4 concentration admission policy with the equivalent
+probability minimum `(1+6*0.4)/7`. Uncertain requests still serve the configured
+model without caching, and failures return regex. The bundled server warms short
+and long client requests before readiness, pins checkpoint/base revisions, and
+skips expired queued work. It is a serial Apple-silicon evaluation runner.
+
+See [Strands reproduction and confidence audit](strands/README.md) and the
+[frozen real-user evaluation](real-world/README.md). Calibration uses only training
+families; its sharpening candidate is rejected because accepted errors increase
+in grouped CV. `ROUTING_SEED=<u64>` enables reproducible tier sampling for the same
+classification and learned state; unset preserves exploration.

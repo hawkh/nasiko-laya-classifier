@@ -11,10 +11,10 @@ The branch is `feat/llm-router-laya-classifier`, in the private repo `hawkh/nasi
 ## What exists
 
 - **`src/routing/request_classifier.rs`:**
-  - The `RequestClassifier` seam, `Classification`, and `ClassifierSource {Regex, Laya, Local, Fallback}`.
-  - `ClassifierKind::from_label`, selected by `REQUEST_CLASSIFIER=regex|local|laya`. Regex is the default.
+  - The `RequestClassifier` seam, `Classification`, and `ClassifierSource {Regex, Laya, Local, Strands, HybridStrands, Fallback}`.
+  - `ClassifierKind::from_label`, selected by `REQUEST_CLASSIFIER=regex|local|laya|strands|strands_raw|hybrid`. Regex is the default.
   - `classify_input`, which builds the classifier's context text from the conversation.
-  - `LOW_CONFIDENCE_FLOOR` (0.4) and `Classification::is_low_confidence`, which is true only for model-backed backends, never regex.
+  - `LOW_CONFIDENCE_FLOOR` (0.4) and `Classification::is_low_confidence`, which is true only for model-backed backends, never regex. Strands also retains the probability-equivalent native admission minimum `(1+6*0.4)/7`, so changing confidence semantics does not silently increase acceptance.
 - **`src/routing/classifier.rs`, `pick_tier`:**
   1. draws the type from `type_probabilities`;
   2. shifts the Tier1 and Tier3 priors by `complexity_confidence × K × (level − 2)/2`, with K = 1.0;
@@ -37,7 +37,7 @@ The branch is `feat/llm-router-laya-classifier`, in the private repo `hawkh/nasi
   - **Gold sets:** `eval/h4-validation.json` (154 held-out requests, tagged by failure mode), `eval/h4-public-sample.json` (the official 10, https://registry.nasiko.dev/r/nasiko/classifier-eval) and `eval/requests.jsonl` (100 requests with chat history).
   - **Reports:** accuracy, F1, complexity, calibration (ECE/Brier), latency p50/p95/p99, low-confidence rate, accuracy when confident, routing outcome through `pick_tier`, and per-tag results.
   - **Gates:** quality gates fail the build if the local model regresses.
-  - **Laya:** included when `LAYA_URL` is set.
+  - **Sidecars:** Laya included with `LAYA_URL`; optimized/raw Strands included with `STRANDS_URL`. Explicit sidecar runs fail on unexpected fallback or backend provenance. `BENCH_PREDICTIONS` exports classifications with hashes for rescoring.
   - **CI:** `.github/workflows/llm-router-classifier.yml`.
 
 ## Current numbers (retrained October 3, 2026)
@@ -55,7 +55,7 @@ Both heads selected C=8; type temperature=0.54, complexity temperature=1.1.
 
 Chat-history type accuracy is 92% (was 86%). Public-sample accuracy regressed to
 7/10 (was 8/10); complexity within ±1 regressed to 80% (was 100%). The report and
-PITCH disclose these tradeoffs. No Laya service was available for the new run.
+PITCH disclose these tradeoffs. The initial retraining run had no Laya service; later comparisons are below.
 
 ## Completed
 
@@ -67,10 +67,63 @@ PITCH disclose these tradeoffs. No Laya service was available for the new run.
   Public abstention is 1/10; reducing it would accept a wrong prediction.
 - Refreshed PITCH and evaluation reproduction notes.
 
+## Strands improvements — October 3, 2026
+
+- `strands` asks one remote type question and uses the embedded retrained complexity
+  head. `strands_raw` retains both native questions. The shared factory powers
+  runtime and `classifier_eval`; API token and timeout come from typed config.
+- Type confidence is the selected-label probability. A separate conservative
+  admission guard preserves the native concentration threshold, subject to wire
+  rounding at the boundary. Scalar confidence below 0.4 and full safe-default
+  rejection are reported separately. Regex remains default and failure fallback.
+- Training-only grouped CV rejects temperature sharpening: NLL improves, but
+  accepted errors increase from 17 to 23. Shipped temperature is identity 1.0.
+- The pinned serial MLX evaluation server warms the actual short/long rubric before
+  readiness. Deadlines discard expired queue work; running Metal work cannot be
+  cancelled. Load/warm-up took about 29–35 seconds on this shared Mac, recorded separately.
+  Bounded MLX residency alone did not prevent initial operational timeouts; the
+  opt-in idle-inference setting is measured separately and never caches responses.
+- `ROUTING_SEED=<u64>` makes tier sampling reproducible for identical inputs and
+  learned state. Unset preserves exploration. Low-confidence and sticky-cache
+  behavior are covered by runtime tests.
+
+The final 30-second offline benchmark preserves type accuracy: 90.9% validation,
+97% chat history, 100% public sample. Raw → optimized p95 is 688 → 345 ms,
+477 → 251 ms and 781 → 381 ms respectively. All 264 requests have zero inference
+fallbacks; 50-seed routing replay and existing local quality gates pass.
+
+**Tradeoffs:** hard chat requests routed to the cheapest tier increase from 13.3%
+to 24.4%; public complexity within ±1 falls from 90% to 80%. Complexity MAE
+improves on validation/chat, but this is not a uniform routing-quality improvement.
+The raw two-question backend also timed out in its first 1.5-second warm-up; the
+30-second benchmark does not establish operational deadline success.
+
+Runtime unit suite: 418 passed, 2 ignored. Provider translation: 5 passed. Six
+external end-to-end tests remain ignored and byte-identical to main. Server/runner
+mock suites: 32 + 8 passed. Predictions, model hashes and source provenance are in
+`eval/strands/benchmark-predictions` and `eval/real-world`.
+
+See `eval/strands/README.md` and `eval/real-world/README.md` for reproduction. The
+bundled server is Apple-silicon-only; the Rust local/regex paths remain portable.
+
 ## Next
 
 1. Assess the public-sample regression on additional independently authored traffic;
    do not copy held-out failures into training or tune repeatedly against them.
-2. Run the benchmark with a live Laya sidecar for a current three-backend comparison.
-3. Optional: local-first cascade to Laya for low-confidence requests.
+2. Review independently human-labelled real traffic and the hard chat/public complexity regressions before choosing a production backend.
+3. Measure any local-first cascade independently; the optional `hybrid` 0.70 policy is not validated as a production recommendation.
 4. Evaluate shadow-mode decisions against actual routing outcomes before rollout.
+
+## Final real-user measurement
+
+The frozen 100-request WildChat slice uses pre-inference machine annotations,
+not independently reviewed human gold. Optimized/native Strands type accuracy
+is 68%; Laya is 42% without fallbacks, local 52%, regex 16%. With bounded
+residency plus opt-in idle inference every five seconds, both Strands modes
+complete two 1,500 ms passes with zero fallbacks and identical classifications.
+Native → optimized p95: 993 → 525 ms (repeat 993 → 512 ms). Hard recall improves
+0/10 → 7/10, but complexity within ±1 falls 95% → 91%. Safe-default rate remains
+26%; accepted wrong types remain 17. Startup takes 29.2 s separately. Earlier
+startup-only and residency-only failures are retained. Idle inference costs
+compute, and neither these results nor synthetic replay prove production SLA or
+downstream savings. See `eval/real-world/maintained-results/report.md`.
