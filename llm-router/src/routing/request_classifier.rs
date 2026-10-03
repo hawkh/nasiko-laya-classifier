@@ -60,6 +60,14 @@ pub struct Classification {
     pub source: ClassifierSource,
 }
 
+impl Classification {
+    /// A model-backed answer too unsure to pin a session on. Regex never is — its fixed
+    /// vote-count confidence is not a probability, and default routing must match main.
+    pub fn is_low_confidence(&self) -> bool {
+        self.type_probabilities.is_some() && self.confidence < LOW_CONFIDENCE_FLOOR
+    }
+}
+
 pub struct ClassifierInput<'a> {
     /// The latest user message — all the regex classifier has ever read.
     pub query: &'a str,
@@ -76,6 +84,12 @@ pub trait RequestClassifier: Send + Sync {
 
 /// The midpoint of the five complexity levels — the level that leaves tier priors unchanged.
 pub const NEUTRAL_LEVEL: f64 = 2.0;
+
+/// Below this type confidence a model-backed classification is not trusted to pin a
+/// session (see [`super::RouteSource::LowConfidence`]). Above it, uncertainty is handled by
+/// sampling the type from `type_probabilities`. `tests/classifier_benchmark.rs` reports
+/// the low-confidence rate and the accuracy on either side of the floor.
+pub const LOW_CONFIDENCE_FLOOR: f64 = 0.4;
 
 /// Today's regex vote-counter, unchanged, wrapped in the seam.
 pub struct RegexClassifier;

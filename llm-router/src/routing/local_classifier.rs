@@ -85,7 +85,9 @@ pub fn features(query: &str, context: &str) -> Vec<(u32, f32)> {
     if query.trim_end().ends_with('?') {
         grams.push("q:question".into());
     }
-    let code_chars = query.matches(['`', '{', '}', '(', ')', ';', '=', '<', '>']).count();
+    let code_chars = query
+        .matches(['`', '{', '}', '(', ')', ';', '=', '<', '>'])
+        .count();
     grams.push(format!("qcode:{}", log_bucket(code_chars)));
 
     let cw = words(&context);
@@ -99,10 +101,7 @@ pub fn features(query: &str, context: &str) -> Vec<(u32, f32)> {
     for g in &grams {
         *counts.entry(bucket(g)).or_default() += 1.0;
     }
-    let mut feats: Vec<(u32, f32)> = counts
-        .into_iter()
-        .map(|(b, n)| (b, 1.0 + n.ln()))
-        .collect();
+    let mut feats: Vec<(u32, f32)> = counts.into_iter().map(|(b, n)| (b, 1.0 + n.ln())).collect();
     feats.sort_unstable_by_key(|(b, _)| *b);
     let norm = feats.iter().map(|(_, v)| v * v).sum::<f32>().sqrt();
     if norm > 0.0 {
@@ -237,10 +236,11 @@ impl LocalModel {
         }
         let type_p = softmax(&type_logits, self.type_temperature);
         let cx_p = softmax(&cx_logits, self.complexity_temperature);
-        let (best, confidence) = type_p
-            .iter()
-            .enumerate()
-            .fold((0, f64::MIN), |acc, (i, p)| if *p > acc.1 { (i, *p) } else { acc });
+        let (best, confidence) =
+            type_p.iter().enumerate().fold(
+                (0, f64::MIN),
+                |acc, (i, p)| if *p > acc.1 { (i, *p) } else { acc },
+            );
         let level: f64 = cx_p.iter().enumerate().map(|(j, p)| j as f64 * p).sum();
         let entropy: f64 = -cx_p
             .iter()
@@ -302,13 +302,26 @@ mod tests {
     #[test]
     fn features_are_sorted_unit_norm_and_deterministic() {
         let f = features("Fix the typo in this comment", "```rust\n// retrun x\n```");
-        assert!(f.windows(2).all(|w| w[0].0 < w[1].0), "sorted, no duplicates");
+        assert!(
+            f.windows(2).all(|w| w[0].0 < w[1].0),
+            "sorted, no duplicates"
+        );
         let norm: f32 = f.iter().map(|(_, v)| v * v).sum::<f32>().sqrt();
         assert!((norm - 1.0).abs() < 1e-5);
-        assert_eq!(f, features("Fix the typo in this comment", "```rust\n// retrun x\n```"));
+        assert_eq!(
+            f,
+            features("Fix the typo in this comment", "```rust\n// retrun x\n```")
+        );
         assert!(f.iter().all(|(b, _)| *b < NUM_BUCKETS));
-        assert_ne!(f, features("Fix the typo in this comment", ""), "context matters");
-        assert!(!features("नमस्ते, आप कैसे हैं?", "").is_empty(), "non-Latin scripts");
+        assert_ne!(
+            f,
+            features("Fix the typo in this comment", ""),
+            "context matters"
+        );
+        assert!(
+            !features("नमस्ते, आप कैसे हैं?", "").is_empty(),
+            "non-Latin scripts"
+        );
     }
 
     #[test]
@@ -367,7 +380,10 @@ mod tests {
         assert!(c.complexity_confidence > 0.9);
 
         let unknown = m.classify_features(&[(12345, 1.0)]);
-        assert!((unknown.confidence - 0.5).abs() < 1e-9, "no evidence = uniform");
+        assert!(
+            (unknown.confidence - 0.5).abs() < 1e-9,
+            "no evidence = uniform"
+        );
         assert!(unknown.complexity_confidence < 1e-9);
         assert_eq!(unknown.complexity, 3);
     }

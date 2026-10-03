@@ -4,7 +4,8 @@
 //!
 //! - `eval/h4-validation.json` — 154 held-out requests, 22 per type, each tagged with the
 //!   failure mode it exercises (keyword traps, no keywords, multilingual, typos, ...).
-//! - `eval/h4-public-sample.json` — the hackathon's 10 public examples.
+//! - `eval/h4-public-sample.json` — the hackathon's 10 public examples
+//!   (https://registry.nasiko.dev/r/nasiko/classifier-eval).
 //! - `eval/requests.jsonl` — 100 hand-labelled requests with real chat history, classified
 //!   from `[Message]`s exactly as a live request is (`classify_input`).
 //!
@@ -186,6 +187,10 @@ struct Metrics {
     easy_to_cheapest: f64,
     by_tag: BTreeMap<String, (usize, usize)>,
     fallbacks: usize,
+    /// Share of requests below `LOW_CONFIDENCE_FLOOR` (served the configured model, unpinned).
+    low_confidence: f64,
+    /// Type accuracy on the requests the router does trust (at or above the floor).
+    confident_accuracy: f64,
 }
 
 fn quantile(sorted: &[f64], q: f64) -> f64 {
@@ -307,6 +312,15 @@ fn metrics(cases: &[Case], scored: &[Scored]) -> Metrics {
         .iter()
         .filter(|s| s.c.source.fallback_reason().is_some())
         .count();
+    let confident: Vec<bool> = scored
+        .iter()
+        .zip(&correct)
+        .filter(|(s, _)| !s.c.is_low_confidence())
+        .map(|(_, ok)| *ok)
+        .collect();
+    m.low_confidence = 1.0 - confident.len() as f64 / n;
+    m.confident_accuracy =
+        confident.iter().filter(|ok| **ok).count() as f64 / confident.len().max(1) as f64;
     m
 }
 
@@ -350,6 +364,12 @@ fn report(out: &mut String, title: &str, cases: &[Case], results: &[(&str, Vec<S
         &[
             row("type accuracy", &|m| pct(m.accuracy)),
             row("type macro-F1", &|m| format!("{:.3}", m.macro_f1)),
+            row("low confidence → configured model, unpinned", &|m| {
+                pct(m.low_confidence)
+            }),
+            row("type accuracy when confident", &|m| {
+                pct(m.confident_accuracy)
+            }),
             row("complexity exact", &|m| pct(m.cx_exact)),
             row("complexity within ±1", &|m| pct(m.cx_within1)),
             row("complexity MAE", &|m| format!("{:.2}", m.cx_mae)),

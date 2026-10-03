@@ -40,7 +40,8 @@ The benchmark is a cargo integration test, `tests/classifier_benchmark.rs`, so i
 the rest of the suite and in CI (`.github/workflows/llm-router-classifier.yml`). It scores
 regex, local and (when `LAYA_URL` reaches a `laya-serve`) Laya through the router's own code on
 `h4-validation.json` (154 held-out, tagged by failure mode), `h4-public-sample.json` (the
-hackathon's 10 public examples) and `requests.jsonl` (classified from real chat history via
+hackathon's 10 public examples, byte-identical to
+https://registry.nasiko.dev/r/nasiko/classifier-eval) and `requests.jsonl` (classified from real chat history via
 `classify_input`). It reports accuracy, macro-F1, per-type F1, complexity exact/±1/MAE/hard
 recall, ECE/Brier, latency p50/p95/p99, the routing outcome through `pick_tier` (mean tier
 cost, hard/easy → cheapest tier), per-tag accuracy, and the requests each backend fixes or

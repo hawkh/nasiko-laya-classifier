@@ -74,7 +74,7 @@ model regresses**.
 | No keywords | 32% | 68% |
 | Keyword traps ("refactor my resume") | 44% | 78% |
 
-The hackathon's public sample (10): 30% regex vs 80% local. Our 100 requests with real chat
+The official public sample (10, https://registry.nasiko.dev/r/nasiko/classifier-eval): 30% regex vs 80% local. Our 100 requests with real chat
 history: 43% vs 86%.
 
 **The money story.** The router stops starving hard requests (57% → 13.5% sent to the cheapest

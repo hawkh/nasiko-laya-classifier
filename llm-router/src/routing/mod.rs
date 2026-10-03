@@ -59,6 +59,11 @@ pub enum RouteSource {
     SmallTalk,
     /// Level 3 — the classifier ran at a safe boundary.
     Classified,
+    /// Level 3 — a model-backed classifier ran but was below
+    /// [`request_classifier::LOW_CONFIDENCE_FLOOR`]: the configured/default model is served
+    /// and the decision cache is **not** written, so the next boundary turn — with more
+    /// context — classifies again instead of the session being pinned to a guess.
+    LowConfidence,
     /// Level 4 — the agent's configured (`llm_config`) model.
     Config,
     /// Level 5 — no `llm_config`: the resolver's passthrough model (the request's own
@@ -286,6 +291,22 @@ pub async fn route_model(
                 query_preview = %query_preview(query),
                 "classifier: classified request"
             );
+            if classification.is_low_confidence() {
+                tracing::info!(
+                    target: "nasiko::llm_router::routing",
+                    agent_id = %inputs.agent_id, %conv_id,
+                    level = 3,
+                    source = ?RouteSource::LowConfidence,
+                    confidence = classification.confidence,
+                    model = %inputs.fallback_model,
+                    "route_model: LEVEL 3 (LowConfidence) — classifier unsure; serving the configured/default model without pinning"
+                );
+                return RouteDecision {
+                    model: inputs.fallback_model.to_string(),
+                    tier: None,
+                    source: RouteSource::LowConfidence,
+                };
+            }
             let learned = cell_store.load(inputs.provider).await;
             // `request_type` is the type the tier was sampled under (drawn from the
             // classifier's distribution) — the one feedback must be credited to.
@@ -920,6 +941,48 @@ mod tests {
         assert_eq!(
             *counting.calls.lock().unwrap(),
             vec!["Latest request:\nhello".to_string()]
+        );
+    }
+
+    /// A model-backed classifier that is unsure between two types.
+    struct UnsureClassifier;
+    #[async_trait]
+    impl RequestClassifier for UnsureClassifier {
+        async fn classify(&self, _input: &ClassifierInput<'_>) -> Classification {
+            Classification {
+                request_type: RequestType::Writing,
+                type_probabilities: Some(vec![
+                    (RequestType::Writing, 0.35),
+                    (RequestType::General, 0.33),
+                    (RequestType::FactualLookup, 0.32),
+                ]),
+                complexity: 3,
+                complexity_level: 2.0,
+                complexity_confidence: 0.1,
+                confidence: 0.35,
+                source: ClassifierSource::Local,
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn low_confidence_serves_the_configured_model_without_pinning() {
+        let cache = FakeCache::empty();
+        let s = signals(Some("c1"), Phase::Switch, Mode::FreeFlowing);
+        let d = route_model(
+            &cache,
+            &test_support::StubRegistry,
+            &InMemoryCellStore::new(),
+            &AllowAllGate,
+            &UnsureClassifier,
+            &inputs("anthropic", &s, None),
+        )
+        .await;
+        assert_eq!(d.source, RouteSource::LowConfidence);
+        assert_eq!((d.model.as_str(), d.tier), ("cfg-model", None));
+        assert!(
+            cache.puts.lock().unwrap().is_empty(),
+            "an unsure classification must not pin the session"
         );
     }
 
