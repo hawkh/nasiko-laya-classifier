@@ -1,0 +1,2 @@
+wc-001: classifier fallback (timeout)
+100 cases -> /Users/gouravnss/personal/nasiko-laya-retrain/llm-router/eval/real-world/resident-results/strands_raw-run1.jsonl (1 fell back to regex)

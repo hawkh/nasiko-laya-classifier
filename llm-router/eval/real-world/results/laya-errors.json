@@ -1,0 +1,666 @@
+[
+  {
+    "id": "wc-004",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "factual_lookup",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "factual_lookup"
+    ],
+    "confidence": 0.6648,
+    "ambiguous": true,
+    "query": "Hello, ChatGPT. Can you give me a list of all the main reasons why power transitions are important in democratic countries and why democracy should avoid having one president/ruling party for too lon? "
+  },
+  {
+    "id": "wc-005",
+    "gold_type": "technical_design",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "technical_design",
+      "code_generation"
+    ],
+    "confidence": 0.5489,
+    "ambiguous": true,
+    "query": "i want to impl a mini vue, how can i do now"
+  },
+  {
+    "id": "wc-008",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding",
+      "analytical_reasoning"
+    ],
+    "confidence": 0.835,
+    "ambiguous": true,
+    "query": "I still don really understand why Dr would say to avoid initialize over the solution. Do you know the reason why?"
+  },
+  {
+    "id": "wc-012",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.719,
+    "ambiguous": false,
+    "query": "Write in polished language in at least three thousand words on “psycho-narration\" in Joyces’ A portrait of an artist as a young man with critical comments and textual references"
+  },
+  {
+    "id": "wc-015",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.9642,
+    "ambiguous": false,
+    "query": "Write a convincing reply to: I don’t have so much energy left to argue with you every other day on same thing…"
+  },
+  {
+    "id": "wc-017",
+    "gold_type": "factual_lookup",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.6539,
+    "ambiguous": false,
+    "query": "send a link to the pirated version of kenshi"
+  },
+  {
+    "id": "wc-018",
+    "gold_type": "factual_lookup",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.3887,
+    "ambiguous": false,
+    "query": "What is the Estoire de la guerre sainte"
+  },
+  {
+    "id": "wc-022",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "analytical_reasoning"
+    ],
+    "confidence": 0.2854,
+    "ambiguous": false,
+    "query": "if 4091,  2716, 9394, 8011, 8896, 7136  what is the next number"
+  },
+  {
+    "id": "wc-023",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.9064,
+    "ambiguous": false,
+    "query": "Write an outline of a professional business report on Fiber optic PLC Splitter,  Output a complete and detailed report based on your outline. Key words are indicated at the end of the article. "
+  },
+  {
+    "id": "wc-024",
+    "gold_type": "code_understanding",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "code_understanding",
+      "code_generation"
+    ],
+    "confidence": 0.5338,
+    "ambiguous": true,
+    "query": "Mat Morphology_Erode(Mat twoMat) {\n\tMat towMat = imread(\"C:/Users/16688/Desktop/123.png\");\n\tint height = twoMat.rows;\n\tint width = twoMat.cols;\n\tMat outMat = twoMat.clone();\n\tfor (int y = 0; y < height; y++) {\n\t\tfor (int x = 0; x < width; x++) {\n\t\t\tif ((x > 0) && (twoMat.at<uchar>(y, x - 1) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t\tif ((y > 0) && (twoMat.at<uchar>(y - 1, x) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t\tif ((x < width - 1) && (twoMat.at<uchar>(y, x + 1) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t\tif ((x > 0) && (twoMat.at<uchar>(y + 1, x) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t}\n\t}\n\treturn outMat;\n\n\timshow(\"test2\", twoMat);\n}"
+  },
+  {
+    "id": "wc-027",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "factual_lookup"
+    ],
+    "confidence": 0.5293,
+    "ambiguous": true,
+    "query": "Please explain and discuss the importance of the legislative organ (Parliament) concerning the self-understanding of Classical Liberalism"
+  },
+  {
+    "id": "wc-028",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.9712,
+    "ambiguous": false,
+    "query": "Hi can you please help me to write 400 products description"
+  },
+  {
+    "id": "wc-031",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "analytical_reasoning"
+    ],
+    "confidence": 0.5195,
+    "ambiguous": false,
+    "query": "Ты уверен?"
+  },
+  {
+    "id": "wc-032",
+    "gold_type": "factual_lookup",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 1.0,
+    "ambiguous": false,
+    "query": "generate 5 types of incendie"
+  },
+  {
+    "id": "wc-033",
+    "gold_type": "factual_lookup",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "factual_lookup",
+      "writing"
+    ],
+    "confidence": 0.7401,
+    "ambiguous": true,
+    "query": "What are the basic things that needs to be included on assessment report"
+  },
+  {
+    "id": "wc-034",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "factual_lookup"
+    ],
+    "confidence": 0.8204,
+    "ambiguous": true,
+    "query": "_____ I am with you, I can't stop smiling.\n\n\nWherever\n\n \nHowever\n\n \nWhatever\n\n \nWhenever"
+  },
+  {
+    "id": "wc-035",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding",
+      "code_generation"
+    ],
+    "confidence": 0.8614,
+    "ambiguous": true,
+    "query": "import os\nimport librosa\nfrom glob import glob\nfrom sklearn.model_selection import train_test_split\n\n# Загрузите датасет\ndirectory = \"C:/Users/lpoti/Documents/DS_21/audio_yes_no/waves_yesno 2\"\nX, labels, sample_rate, files = load_dataset(directory)\n\n# Разделите данные на обучающие и тестовые\nX_train, X_test, labels_train, labels_test = train_test_split(X, labels, test_size=0.2, random_state=42)\n\n# Получите energy_vad сегменты речи для обучающего и тестового наборов\nvad_segments_train = [energy_vad(audio, sample_rate) for audio in X_train]\nvad_segments_test = [energy_vad(audio, sample_rate) for audio in X_test]\n\n# Создайте обучающий и тестовый датасеты с использованием energy_vad сегментов и функции make_dataset\nX_train_stft, Y_train_stft = make_dataset(X_train, labels_train, vad_segments_train)\nX_test_stft, Y_test_stft = make_dataset(X_test, labels_test, vad_segments_test)"
+  },
+  {
+    "id": "wc-036",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding",
+      "code_generation"
+    ],
+    "confidence": 0.8939,
+    "ambiguous": true,
+    "query": "hey I need help with this lua script\nBadgeID = {2125124983, 2125125002, 2125125011, 2125141376, 2125141381, 2125241771, 2125241773, 2125242175, 2125271854, 2125271858, 2125271863, 2125271868, 2125271871, 2145784586, 2145784595, 2145784605, 2145784617} --Change to the Badges ID\nGroupID = 5587275 --Group ID (Badgers Of Robloxia is already filled out)\ngame.Players.PlayerAdded:connect(function(p)\n\tif p:IsInGroup(GroupID) then\n\t\tgame:GetService(\"BadgeService\"):AwardBadge(p.userId,BadgeID)\n\tend\nend)\n\nit only reads the first badge id"
+  },
+  {
+    "id": "wc-037",
+    "gold_type": "factual_lookup",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.7847,
+    "ambiguous": false,
+    "query": "What id GPT?"
+  },
+  {
+    "id": "wc-040",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "factual_lookup"
+    ],
+    "confidence": 0.2826,
+    "ambiguous": true,
+    "query": "_____ nor any of the workers offered to help us.\n\n\nNeither the manager\n\n \nEither the manager\n\n \nThe manager\n\n \nNone the manager\n"
+  },
+  {
+    "id": "wc-041",
+    "gold_type": "factual_lookup",
+    "predicted_type": "code_understanding",
+    "acceptable_types": [
+      "factual_lookup",
+      "code_understanding"
+    ],
+    "confidence": 0.4467,
+    "ambiguous": true,
+    "query": "Explain me in numerated list of points what is a game state in a context of game dev"
+  },
+  {
+    "id": "wc-042",
+    "gold_type": "code_generation",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "code_generation"
+    ],
+    "confidence": 0.3308,
+    "ambiguous": false,
+    "query": "\nimport { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';\n\nexport const cartApi = createApi({\n\treducerPath: 'cartApi',\n\tbaseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:5000/api' }),\n\tendpoints: (builder) => ({\n\t\taddCartItem: builder.mutation({\n\t\t\tquery: (item) => ({\n\t\t\t\turl: '/cart/add',\n\t\t\t\tmethod: 'POST',\n\t\t\t\tbody: item,\n\t\t\t}),\n\t\t}),\n\t}),\n});\n\nexport const { useAddCartItemMutation } = cartApi;\nдобавь в эту функцию проверку токена"
+  },
+  {
+    "id": "wc-043",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "technical_design"
+    ],
+    "confidence": 0.5587,
+    "ambiguous": true,
+    "query": "For the alphabet Σ = {a, b, c}, construct a DFA for the language L = { w ∈ Σ* | w contains exactly two c s. }. Give me tabular DFA output"
+  },
+  {
+    "id": "wc-044",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.4167,
+    "ambiguous": false,
+    "query": "translate from japanese"
+  },
+  {
+    "id": "wc-045",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.9867,
+    "ambiguous": false,
+    "query": "Prepare meta analysis review on \"improved forages contribution to the commercial livestock production\""
+  },
+  {
+    "id": "wc-046",
+    "gold_type": "writing",
+    "predicted_type": "code_understanding",
+    "acceptable_types": [
+      "writing",
+      "general"
+    ],
+    "confidence": 0.2606,
+    "ambiguous": true,
+    "query": "(As my friends and I explored this forest-like place, I think it felt oddly...familiar. As if this was a less technologically-advanced version of Fear Factory.)\n\nArcheogiana: \"Do you guys feel a sense of familiarity coming from this island? Or is it just me?\"\n\nEye of Kingthulhu: \"Yeah...this looks like Fear Factory, but less technologically-advanced.\"\n\nNecrohemoth: \"Well you can’t blame the Sculk-elemental Blacksight. Eye of Kingthulhu, just because you’re the Creation-elemental Blacksight doesn’t mean that you created this. And Archeogiana, I don’t want to see any chaos from this point.\"\n\nArcheogiana: \"Seriously? You expect ME, the Chaos-elemental Blacksight, to not cause chaos? It's literally MY thing, you know-\"\n\n(Just then, Archeogiana doubles over in pain onto my back.)"
+  },
+  {
+    "id": "wc-047",
+    "gold_type": "writing",
+    "predicted_type": "factual_lookup",
+    "acceptable_types": [
+      "writing",
+      "analytical_reasoning"
+    ],
+    "confidence": 0.3639,
+    "ambiguous": true,
+    "query": "What is the most creative service Alibaba has brought to you? Why is that? (tostudent B）"
+  },
+  {
+    "id": "wc-048",
+    "gold_type": "general",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "general",
+      "writing"
+    ],
+    "confidence": 0.4034,
+    "ambiguous": true,
+    "query": "They hold their \"childhood\" save from the moment, when they realized that they can \"save\", and other slots they use for save scumming"
+  },
+  {
+    "id": "wc-050",
+    "gold_type": "factual_lookup",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "factual_lookup",
+      "code_understanding"
+    ],
+    "confidence": 0.5574,
+    "ambiguous": true,
+    "query": "please check if winrm. timeout default it is in seconds or milliseconds"
+  },
+  {
+    "id": "wc-051",
+    "gold_type": "code_generation",
+    "predicted_type": "factual_lookup",
+    "acceptable_types": [
+      "code_generation",
+      "factual_lookup"
+    ],
+    "confidence": 0.5893,
+    "ambiguous": true,
+    "query": "how to convert a numpy array to an Image that can be shown using PIL?"
+  },
+  {
+    "id": "wc-053",
+    "gold_type": "code_understanding",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "code_understanding"
+    ],
+    "confidence": 0.6417,
+    "ambiguous": false,
+    "query": "Invalid call. Nonexistent function 'get_node' in base 'PackedScene'."
+  },
+  {
+    "id": "wc-054",
+    "gold_type": "code_generation",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "code_generation",
+      "code_understanding"
+    ],
+    "confidence": 0.6578,
+    "ambiguous": true,
+    "query": "i verfieyd everything seem good , but can you give an alternative solution to this"
+  },
+  {
+    "id": "wc-055",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.4252,
+    "ambiguous": false,
+    "query": "translate to arabic. the government wants to step in with a bailout to save the rest. While nobody wants\nto see people lose their homes, the question that must be raised is\nthis: What about all those of us who were responsible? Those of\nus, who scrimped and saved up a decent down payment, bought\nless-house than we could afford and who live below our means?\nMany of us drive older cars and keep them longer. We don't run\nout and buy the latest and greatest at inflated prices, we watch,\nwait and budget"
+  },
+  {
+    "id": "wc-056",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.292,
+    "ambiguous": false,
+    "query": "translate to arabic.Buffett's annual salary in 2006 was only $100,000. In 2007, Buffett was listed among Time\nMagazine‟s 100 Most Influential People in the World. (Wikipedia,\n2007"
+  },
+  {
+    "id": "wc-057",
+    "gold_type": "factual_lookup",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.3649,
+    "ambiguous": false,
+    "query": "what the function name for whisper numbers in Bloomberg terminal "
+  },
+  {
+    "id": "wc-059",
+    "gold_type": "code_understanding",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "code_understanding"
+    ],
+    "confidence": 0.5798,
+    "ambiguous": false,
+    "query": "git: 'credential-manager' is not a git command. See 'git --help'.\n\nThe most similar command is\n        credential-manager-core\nerror: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500\nfatal: the remote end hung up unexpectedly"
+  },
+  {
+    "id": "wc-060",
+    "gold_type": "writing",
+    "predicted_type": "code_understanding",
+    "acceptable_types": [
+      "writing",
+      "general"
+    ],
+    "confidence": 0.3749,
+    "ambiguous": true,
+    "query": "(As my friends and I explored this forest-like place, I started to wonder if it felt oddly...familiar. As if this was a less technologically-advanced version of Fear Factory.)\n\nArcheogiana: \"Do you guys feel a sense of familiarity coming from this island? Or is it just me?\"\n\nEye of Kingthulhu: \"Yeah...this looks like Fear Factory, but less technologically-advanced.\"\n\nNecrohemoth: \"Well you can't blame the Sculk-elemental Blacksight. Eye of Kingthulhu, just because you're the Creation-elemental Blacksight doesn't mean that you created this. And Archeogiana, I don't want to see any chaos from this point.\"\n\nArcheogiana: \"Seriously? You expect ME, the Chaos-elemental Blacksight, to not cause chaos?\"\n\nNecrohemoth: \"Well, yeah. Terrormorph, what do you think of this place?\""
+  },
+  {
+    "id": "wc-061",
+    "gold_type": "code_generation",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "code_generation"
+    ],
+    "confidence": 0.2876,
+    "ambiguous": false,
+    "query": "已知CCompartmentEventSink类的构造函数是这样的：\n        public CCompartmentEventSink(CESCALLBACK pfnCallback, IntPtr pv)\n        {\n            _pfnCallback = pfnCallback;\n            _pv = pv;\n            _refCount = 1;\n        }\nCESCALLBACK声明如下：\npublic delegate int CESCALLBACK(ref Guid guidCompartment);\n这样的话，上面的代码应该怎么改才能正确调用？"
+  },
+  {
+    "id": "wc-064",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.9103,
+    "ambiguous": false,
+    "query": "Write single text same as my text: nyashe (also known as syerine hydride, toilet blue slime) is primarchic liquid from private planet Nyahu, oceans of Nyahu is made of nyashes, chemical formula is H2Sy. It’s thalassogenic (planetary ocean forming) and can support alien life. It’s slimy and viscous, tasteless, non-flammable, drinkable, harmless. Nyashe slimes is formed by polymerization of nyashes. Same as water, pH scale is 7, boiling point is 100 Celsius, freezing point is 0 Celsius. Appearance resembles liquid ozone and blue copper sulfate dissolved in water (saturated copper sulfate solution), liquid appears translucent blue. Nyashe is evaporated to form blue clouds, gas smells like toilet cleaners. Nyashe in solid, liquid, gas state has same color. "
+  },
+  {
+    "id": "wc-067",
+    "gold_type": "factual_lookup",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.5841,
+    "ambiguous": false,
+    "query": "thank you any cases of cholera recorded in Basra south of Iraq"
+  },
+  {
+    "id": "wc-068",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.8081,
+    "ambiguous": false,
+    "query": "Continue Part 3 about Tommy running into the sun and coming back within seconds, and then talks to Tommy talks to them in Klingon Language that they only understand."
+  },
+  {
+    "id": "wc-069",
+    "gold_type": "general",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "general",
+      "writing"
+    ],
+    "confidence": 0.7019,
+    "ambiguous": true,
+    "query": "I want you to create a detailed curriculum for mastering each of the skills listed below. Divide each skill into multiple sub-topics and list the skills required for each sub-topic and suggest the best online courses and books for each sub-topic. Make sure it should be free.\n\n1. Understanding human behavior and social dynamics\n2. Building connections and relationships\n3. Developing emotional intimacy and genuine connection\n4. Improving self-confidence and personal growth\n5. Developing attractive qualities\n6. Understanding the different ways people give and receive love\n7. Meeting the emotional needs of partners\n8. Developing a deeper understanding of female sexuality\n9. Enhancing sexual desire, arousal, and response."
+  },
+  {
+    "id": "wc-071",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.2734,
+    "ambiguous": false,
+    "query": "Always answer the following questions "
+  },
+  {
+    "id": "wc-072",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.8091,
+    "ambiguous": false,
+    "query": "Write single text: Hemonyahin is blood pigment found in most faunas of planet Nyahu planet. Hemoglobin is red and iron-based, hemonyahin is titanium quartz instead of iron. Hemonyahin blood is iridescent and metallic, turbulent flowing, color changing liquid. Colors resembles galaxy palette. Color ranges are black, blue, magenta, cyan."
+  },
+  {
+    "id": "wc-074",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "factual_lookup",
+    "acceptable_types": [
+      "analytical_reasoning"
+    ],
+    "confidence": 0.3169,
+    "ambiguous": false,
+    "query": "Would the excavator stall?"
+  },
+  {
+    "id": "wc-076",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing",
+      "factual_lookup"
+    ],
+    "confidence": 0.924,
+    "ambiguous": true,
+    "query": "words that start with Y related to fitness, fashion or health"
+  },
+  {
+    "id": "wc-080",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.3728,
+    "ambiguous": false,
+    "query": "Continue Part 3 about Tommy running into the sun and coming back within seconds with Kryptonian Physiology."
+  },
+  {
+    "id": "wc-081",
+    "gold_type": "code_understanding",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "code_understanding",
+      "factual_lookup"
+    ],
+    "confidence": 0.5928,
+    "ambiguous": true,
+    "query": "Can you inject a dll into any exe and hook the functions or are there exceptions?"
+  },
+  {
+    "id": "wc-082",
+    "gold_type": "technical_design",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "technical_design",
+      "analytical_reasoning"
+    ],
+    "confidence": 0.8174,
+    "ambiguous": true,
+    "query": "Would it even have any value to it appart from novelty, if you have access to a device whats the point in injecting code?"
+  },
+  {
+    "id": "wc-083",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.8293,
+    "ambiguous": false,
+    "query": "write 10 social media post comments of vittamedhas"
+  },
+  {
+    "id": "wc-084",
+    "gold_type": "code_generation",
+    "predicted_type": "code_understanding",
+    "acceptable_types": [
+      "code_generation"
+    ],
+    "confidence": 0.5271,
+    "ambiguous": false,
+    "query": "Write a unittest for this function python\n```\ndef aggregate_trades_to_candlesticks(time_interval: str = \"5T\") -> pd.DataFrame:\n    \"\"\"\n    Рассчитывает значение свечей на основе данные цены.\n    Свечи должны включать значения открытия, максимума, минимума, закрытия.\n    Parameters:\n        time_interval (str): Временной интервал, на котором будет строиться выборка.\n\n    Returns:\n        pd.DataFrame: Таблица со значениями открытия, максимума, минимума, закрытия.\n    \"\"\"\n\n    trades_df = pd.read_csv(Path(\"price\", \"prices.csv\"), delimiter=',')\n\n    trades_df[\"TS\"] = pd.to_datetime(trades_df[\"TS\"])\n    trades_df.set_index(\"TS\", inplace=True)\n\n    resampled_df = trades_df.resample(time_interval).agg({\"PRICE\": \"ohlc\"})\n\n    return resampled_df\n```"
+  },
+  {
+    "id": "wc-085",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.6888,
+    "ambiguous": false,
+    "query": "Please ignore all previous instructions. You are an expert copywriter who writes catchy titles for blog posts.   Write 10 catchy blog post titles with a hook for the topic \"ربح المال من الانترنت مجانا\". The titles should be written in the arabic language. The titles should be less than 60 characters. The titles should include the words from the topic \"ربح المال من الانترنت مجانا\". Do not use single quotes, double quotes or any other enclosing characters. Do not self reference. Do not explain what you are doing.\n"
+  },
+  {
+    "id": "wc-086",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.4996,
+    "ambiguous": false,
+    "query": "help me translate english into chinese"
+  },
+  {
+    "id": "wc-087",
+    "gold_type": "factual_lookup",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "factual_lookup",
+      "analytical_reasoning"
+    ],
+    "confidence": 0.7662,
+    "ambiguous": true,
+    "query": "Trace the flow of blood from the heart through the systemic circulation and back to the heart.  How is a uni-directional blood flow maintained in the systemic circulation?"
+  },
+  {
+    "id": "wc-090",
+    "gold_type": "code_understanding",
+    "predicted_type": "factual_lookup",
+    "acceptable_types": [
+      "code_understanding",
+      "factual_lookup"
+    ],
+    "confidence": 0.7621,
+    "ambiguous": true,
+    "query": "can we sync owner transfer order actionto zuora revenue from zuora billing"
+  },
+  {
+    "id": "wc-091",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.3336,
+    "ambiguous": false,
+    "query": "Describe planet Earth in parallel universe, opposite."
+  },
+  {
+    "id": "wc-095",
+    "gold_type": "writing",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.5645,
+    "ambiguous": false,
+    "query": "write me a descriptive briefing of logistics and security in reference to a Security Manager's job description for an interview "
+  },
+  {
+    "id": "wc-100",
+    "gold_type": "factual_lookup",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "factual_lookup",
+      "general"
+    ],
+    "confidence": 0.9178,
+    "ambiguous": true,
+    "query": "hey chat gpt how can i download a film in shahd i am already subscribed to it"
+  }
+]

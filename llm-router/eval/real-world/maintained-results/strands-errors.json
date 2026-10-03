@@ -1,0 +1,372 @@
+[
+  {
+    "id": "wc-005",
+    "gold_type": "technical_design",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "technical_design",
+      "code_generation"
+    ],
+    "confidence": 0.6395000000000001,
+    "ambiguous": true,
+    "query": "i want to impl a mini vue, how can i do now"
+  },
+  {
+    "id": "wc-008",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding",
+      "analytical_reasoning"
+    ],
+    "confidence": 0.5707570757075706,
+    "ambiguous": true,
+    "query": "I still don really understand why Dr would say to avoid initialize over the solution. Do you know the reason why?"
+  },
+  {
+    "id": "wc-015",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.49675032496750327,
+    "ambiguous": false,
+    "query": "Write a convincing reply to: I don’t have so much energy left to argue with you every other day on same thing…"
+  },
+  {
+    "id": "wc-017",
+    "gold_type": "factual_lookup",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.46814681468146824,
+    "ambiguous": false,
+    "query": "send a link to the pirated version of kenshi"
+  },
+  {
+    "id": "wc-022",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "analytical_reasoning"
+    ],
+    "confidence": 0.3564712942588518,
+    "ambiguous": false,
+    "query": "if 4091,  2716, 9394, 8011, 8896, 7136  what is the next number"
+  },
+  {
+    "id": "wc-024",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding",
+      "code_generation"
+    ],
+    "confidence": 0.7025,
+    "ambiguous": true,
+    "query": "Mat Morphology_Erode(Mat twoMat) {\n\tMat towMat = imread(\"C:/Users/16688/Desktop/123.png\");\n\tint height = twoMat.rows;\n\tint width = twoMat.cols;\n\tMat outMat = twoMat.clone();\n\tfor (int y = 0; y < height; y++) {\n\t\tfor (int x = 0; x < width; x++) {\n\t\t\tif ((x > 0) && (twoMat.at<uchar>(y, x - 1) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t\tif ((y > 0) && (twoMat.at<uchar>(y - 1, x) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t\tif ((x < width - 1) && (twoMat.at<uchar>(y, x + 1) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t\tif ((x > 0) && (twoMat.at<uchar>(y + 1, x) == 0)) {\n\t\t\t\toutMat.at<uchar>(y, x) = 0;\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t}\n\t}\n\treturn outMat;\n\n\timshow(\"test2\", twoMat);\n}"
+  },
+  {
+    "id": "wc-027",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "factual_lookup"
+    ],
+    "confidence": 0.46604660466046605,
+    "ambiguous": true,
+    "query": "Please explain and discuss the importance of the legislative organ (Parliament) concerning the self-understanding of Classical Liberalism"
+  },
+  {
+    "id": "wc-031",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "analytical_reasoning"
+    ],
+    "confidence": 0.3460653934606539,
+    "ambiguous": false,
+    "query": "Ты уверен?"
+  },
+  {
+    "id": "wc-032",
+    "gold_type": "factual_lookup",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "factual_lookup"
+    ],
+    "confidence": 0.3219,
+    "ambiguous": false,
+    "query": "generate 5 types of incendie"
+  },
+  {
+    "id": "wc-033",
+    "gold_type": "factual_lookup",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "factual_lookup",
+      "writing"
+    ],
+    "confidence": 0.7787778777877787,
+    "ambiguous": true,
+    "query": "What are the basic things that needs to be included on assessment report"
+  },
+  {
+    "id": "wc-034",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "factual_lookup"
+    ],
+    "confidence": 0.7324999999999999,
+    "ambiguous": true,
+    "query": "_____ I am with you, I can't stop smiling.\n\n\nWherever\n\n \nHowever\n\n \nWhatever\n\n \nWhenever"
+  },
+  {
+    "id": "wc-035",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding",
+      "code_generation"
+    ],
+    "confidence": 0.5459999999999999,
+    "ambiguous": true,
+    "query": "import os\nimport librosa\nfrom glob import glob\nfrom sklearn.model_selection import train_test_split\n\n# Загрузите датасет\ndirectory = \"C:/Users/lpoti/Documents/DS_21/audio_yes_no/waves_yesno 2\"\nX, labels, sample_rate, files = load_dataset(directory)\n\n# Разделите данные на обучающие и тестовые\nX_train, X_test, labels_train, labels_test = train_test_split(X, labels, test_size=0.2, random_state=42)\n\n# Получите energy_vad сегменты речи для обучающего и тестового наборов\nvad_segments_train = [energy_vad(audio, sample_rate) for audio in X_train]\nvad_segments_test = [energy_vad(audio, sample_rate) for audio in X_test]\n\n# Создайте обучающий и тестовый датасеты с использованием energy_vad сегментов и функции make_dataset\nX_train_stft, Y_train_stft = make_dataset(X_train, labels_train, vad_segments_train)\nX_test_stft, Y_test_stft = make_dataset(X_test, labels_test, vad_segments_test)"
+  },
+  {
+    "id": "wc-036",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding",
+      "code_generation"
+    ],
+    "confidence": 0.8181818181818182,
+    "ambiguous": true,
+    "query": "hey I need help with this lua script\nBadgeID = {2125124983, 2125125002, 2125125011, 2125141376, 2125141381, 2125241771, 2125241773, 2125242175, 2125271854, 2125271858, 2125271863, 2125271868, 2125271871, 2145784586, 2145784595, 2145784605, 2145784617} --Change to the Badges ID\nGroupID = 5587275 --Group ID (Badgers Of Robloxia is already filled out)\ngame.Players.PlayerAdded:connect(function(p)\n\tif p:IsInGroup(GroupID) then\n\t\tgame:GetService(\"BadgeService\"):AwardBadge(p.userId,BadgeID)\n\tend\nend)\n\nit only reads the first badge id"
+  },
+  {
+    "id": "wc-040",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "analytical_reasoning",
+      "factual_lookup"
+    ],
+    "confidence": 0.4687,
+    "ambiguous": true,
+    "query": "_____ nor any of the workers offered to help us.\n\n\nNeither the manager\n\n \nEither the manager\n\n \nThe manager\n\n \nNone the manager\n"
+  },
+  {
+    "id": "wc-044",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.4927,
+    "ambiguous": false,
+    "query": "translate from japanese"
+  },
+  {
+    "id": "wc-045",
+    "gold_type": "writing",
+    "predicted_type": "analytical_reasoning",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.6217621762176218,
+    "ambiguous": false,
+    "query": "Prepare meta analysis review on \"improved forages contribution to the commercial livestock production\""
+  },
+  {
+    "id": "wc-046",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing",
+      "general"
+    ],
+    "confidence": 0.5234,
+    "ambiguous": true,
+    "query": "(As my friends and I explored this forest-like place, I think it felt oddly...familiar. As if this was a less technologically-advanced version of Fear Factory.)\n\nArcheogiana: \"Do you guys feel a sense of familiarity coming from this island? Or is it just me?\"\n\nEye of Kingthulhu: \"Yeah...this looks like Fear Factory, but less technologically-advanced.\"\n\nNecrohemoth: \"Well you can’t blame the Sculk-elemental Blacksight. Eye of Kingthulhu, just because you’re the Creation-elemental Blacksight doesn’t mean that you created this. And Archeogiana, I don’t want to see any chaos from this point.\"\n\nArcheogiana: \"Seriously? You expect ME, the Chaos-elemental Blacksight, to not cause chaos? It's literally MY thing, you know-\"\n\n(Just then, Archeogiana doubles over in pain onto my back.)"
+  },
+  {
+    "id": "wc-050",
+    "gold_type": "factual_lookup",
+    "predicted_type": "code_understanding",
+    "acceptable_types": [
+      "factual_lookup",
+      "code_understanding"
+    ],
+    "confidence": 0.3382,
+    "ambiguous": true,
+    "query": "please check if winrm. timeout default it is in seconds or milliseconds"
+  },
+  {
+    "id": "wc-054",
+    "gold_type": "code_generation",
+    "predicted_type": "code_understanding",
+    "acceptable_types": [
+      "code_generation",
+      "code_understanding"
+    ],
+    "confidence": 0.5575442455754425,
+    "ambiguous": true,
+    "query": "i verfieyd everything seem good , but can you give an alternative solution to this"
+  },
+  {
+    "id": "wc-055",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.4391,
+    "ambiguous": false,
+    "query": "translate to arabic. the government wants to step in with a bailout to save the rest. While nobody wants\nto see people lose their homes, the question that must be raised is\nthis: What about all those of us who were responsible? Those of\nus, who scrimped and saved up a decent down payment, bought\nless-house than we could afford and who live below our means?\nMany of us drive older cars and keep them longer. We don't run\nout and buy the latest and greatest at inflated prices, we watch,\nwait and budget"
+  },
+  {
+    "id": "wc-056",
+    "gold_type": "writing",
+    "predicted_type": "factual_lookup",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.45105489451054903,
+    "ambiguous": false,
+    "query": "translate to arabic.Buffett's annual salary in 2006 was only $100,000. In 2007, Buffett was listed among Time\nMagazine‟s 100 Most Influential People in the World. (Wikipedia,\n2007"
+  },
+  {
+    "id": "wc-060",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing",
+      "general"
+    ],
+    "confidence": 0.5268473152684732,
+    "ambiguous": true,
+    "query": "(As my friends and I explored this forest-like place, I started to wonder if it felt oddly...familiar. As if this was a less technologically-advanced version of Fear Factory.)\n\nArcheogiana: \"Do you guys feel a sense of familiarity coming from this island? Or is it just me?\"\n\nEye of Kingthulhu: \"Yeah...this looks like Fear Factory, but less technologically-advanced.\"\n\nNecrohemoth: \"Well you can't blame the Sculk-elemental Blacksight. Eye of Kingthulhu, just because you're the Creation-elemental Blacksight doesn't mean that you created this. And Archeogiana, I don't want to see any chaos from this point.\"\n\nArcheogiana: \"Seriously? You expect ME, the Chaos-elemental Blacksight, to not cause chaos?\"\n\nNecrohemoth: \"Well, yeah. Terrormorph, what do you think of this place?\""
+  },
+  {
+    "id": "wc-063",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.48540291941611674,
+    "ambiguous": false,
+    "query": "“Simp for Feet”\nIn this script Dave is incredibly susceptible to hypnosis, although he doesn’t know it and nor does anyone else. So when his older friend Megan reads about a new film about a hypnotist and jokingly pretends to do a half-hearted feeble hypnotic induction on Dave, despite his derisive snorts, he slowly drops deep into a mindless trance for her. Totally in Megan’s power! She doesn’t snap him out of it until she’s had him massage her feet & given him \"simp for feet\" suggestions."
+  },
+  {
+    "id": "wc-069",
+    "gold_type": "general",
+    "predicted_type": "writing",
+    "acceptable_types": [
+      "general",
+      "writing"
+    ],
+    "confidence": 0.4887,
+    "ambiguous": true,
+    "query": "I want you to create a detailed curriculum for mastering each of the skills listed below. Divide each skill into multiple sub-topics and list the skills required for each sub-topic and suggest the best online courses and books for each sub-topic. Make sure it should be free.\n\n1. Understanding human behavior and social dynamics\n2. Building connections and relationships\n3. Developing emotional intimacy and genuine connection\n4. Improving self-confidence and personal growth\n5. Developing attractive qualities\n6. Understanding the different ways people give and receive love\n7. Meeting the emotional needs of partners\n8. Developing a deeper understanding of female sexuality\n9. Enhancing sexual desire, arousal, and response."
+  },
+  {
+    "id": "wc-073",
+    "gold_type": "factual_lookup",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "factual_lookup",
+      "general"
+    ],
+    "confidence": 0.42204220422042205,
+    "ambiguous": true,
+    "query": "skills and competencies for external relations"
+  },
+  {
+    "id": "wc-074",
+    "gold_type": "analytical_reasoning",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "analytical_reasoning"
+    ],
+    "confidence": 0.37533753375337536,
+    "ambiguous": false,
+    "query": "Would the excavator stall?"
+  },
+  {
+    "id": "wc-079",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.4631,
+    "ambiguous": false,
+    "query": "\"Submissive for Feet\"\nIn this script Dave is incredibly susceptible to hypnosis, although he doesn’t know it and nor does anyone else. So when his friend Megan reads about a new film about a hypnotist and jokingly pretends to do a half-hearted feeble hypnotic induction on Dave, despite his derisive snorts, he drops deep into a mindless trance for her. Totally in Megan's power! She doesn’t snap him out of it until she’s had him massage her feet. "
+  },
+  {
+    "id": "wc-081",
+    "gold_type": "code_understanding",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "code_understanding",
+      "factual_lookup"
+    ],
+    "confidence": 0.42840000000000006,
+    "ambiguous": true,
+    "query": "Can you inject a dll into any exe and hook the functions or are there exceptions?"
+  },
+  {
+    "id": "wc-086",
+    "gold_type": "writing",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "writing"
+    ],
+    "confidence": 0.5231999999999999,
+    "ambiguous": false,
+    "query": "help me translate english into chinese"
+  },
+  {
+    "id": "wc-090",
+    "gold_type": "code_understanding",
+    "predicted_type": "technical_design",
+    "acceptable_types": [
+      "code_understanding",
+      "factual_lookup"
+    ],
+    "confidence": 0.6161383861613838,
+    "ambiguous": true,
+    "query": "can we sync owner transfer order actionto zuora revenue from zuora billing"
+  },
+  {
+    "id": "wc-099",
+    "gold_type": "code_understanding",
+    "predicted_type": "code_generation",
+    "acceptable_types": [
+      "code_understanding"
+    ],
+    "confidence": 0.4770477047704772,
+    "ambiguous": false,
+    "query": "Traceback (most recent call last):\n  File \"f:/GEE/wurenlongchang/3.py\", line 273, in <module>\n    main()\n  File \"f:/GEE/wurenlongchang/3.py\", line 268, in main\n    field_calculator.calculate_fields()\n  File \"f:/GEE/wurenlongchang/3.py\", line 211, in calculate_fields\n    arcpy.CalculateField_management(shp, 'Area', crop, expression_type=\"python\")\n  File \"C:\\Program Files (x86)\\ArcGIS\\Desktop10.7\\ArcPy\\arcpy\\management.py\", line 3647, in CalculateField\n    raise e\narcgisscripting.ExecuteError: Failed to execute. Parameters are not valid.\nERROR 000728: Field Area does not exist within table\nFailed to execute (CalculateField)."
+  },
+  {
+    "id": "wc-100",
+    "gold_type": "factual_lookup",
+    "predicted_type": "general",
+    "acceptable_types": [
+      "factual_lookup",
+      "general"
+    ],
+    "confidence": 0.6869000000000001,
+    "ambiguous": true,
+    "query": "hey chat gpt how can i download a film in shahd i am already subscribed to it"
+  }
+]

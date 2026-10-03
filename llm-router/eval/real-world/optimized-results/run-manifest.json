@@ -1,0 +1,355 @@
+{
+  "schema_version": 2,
+  "status": "complete",
+  "labels_path": "/Users/gouravnss/personal/nasiko-laya-retrain/llm-router/eval/real-world/sample-labelled.json",
+  "labels_sha256": "c23ddedb82c675ba125c828c0fb2fa7efe5388866d05f6e1cd1d0eba97f661a7",
+  "binary_path": "/private/tmp/p2-strands-improved-classifier-eval",
+  "binary_sha256": "b14d2485f5b45f06be17345e1c32b9c22539052ded3465fa4460c0cffc6e83bf",
+  "source_root": "/Users/gouravnss/personal/nasiko-laya-retrain",
+  "commit": "393b3d349ae6c192188991cce1c437a5a1da3871",
+  "tracked_diff_sha256": "0f7301b3857885df46293045fd97aa31fb12b77de0cb73bf4f5d2181e6df18b4",
+  "hardware": "macOS-26.5-arm64-arm-64bit-Mach-O",
+  "timeouts_ms": {
+    "laya": 1500,
+    "strands": 1500
+  },
+  "urls": {
+    "laya": "http://127.0.0.1:18098",
+    "strands": "http://127.0.0.1:18899"
+  },
+  "health": {
+    "laya": {
+      "status": "ok",
+      "loaded": [
+        "multilingual"
+      ],
+      "revisions": {
+        "multilingual": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851"
+      },
+      "device": "cpu",
+      "device_is_preference": false,
+      "checkpoint_devices": {
+        "multilingual": "cpu"
+      },
+      "cpu_fallbacks": {
+        "multilingual": {
+          "count": 0,
+          "last_reason": null
+        }
+      }
+    },
+    "strands": {
+      "status": "ok",
+      "ready": true,
+      "checkpoint": "/Users/gouravnss/.cache/huggingface/hub/models--StrandsAgents--strands-decider-2B-hobson-v19/snapshots/bb282d786bc251fd4e3068de3ada9ddbb38127cd",
+      "checkpoint_revision": "bb282d786bc251fd4e3068de3ada9ddbb38127cd",
+      "base_model": "Qwen/Qwen3.5-2B-Base",
+      "base_model_path": "/Users/gouravnss/.cache/huggingface/hub/models--Qwen--Qwen3.5-2B-Base/snapshots/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+      "base_model_revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+      "head_sha256": "daad0727152b6185447cee36f78230c144312feb7b19f02749b19645238b5287",
+      "model": "strands-decider-2B-hobson-v19-q4",
+      "device": "mlx",
+      "prefix_cache": false,
+      "max_batch": 1,
+      "serial": true,
+      "quantization_bits": 4,
+      "cache_limit_bytes": 134217728,
+      "max_length": 4096,
+      "load_ms": 27420.147374999942,
+      "warmup_ms": 2288.407084000937,
+      "ready_ms": 29708.603374998347,
+      "warmup": [
+        {
+          "profile": "configured_short",
+          "latency_ms": 1768.9288749970729,
+          "questions": 1,
+          "input_tokens": 177
+        },
+        {
+          "profile": "configured_long",
+          "latency_ms": 512.3409580010048,
+          "questions": 1,
+          "input_tokens": 443
+        }
+      ],
+      "warmup_rubric": "client",
+      "deadline_header": "X-Request-Deadline-Unix-Ms"
+    }
+  },
+  "calibration": {
+    "artifact_path": "/Users/gouravnss/personal/nasiko-laya-retrain/llm-router/assets/strands_calibration.json",
+    "artifact_present": true,
+    "sources": [
+      {
+        "path": "/Users/gouravnss/personal/nasiko-laya-retrain/llm-router/assets/strands_calibration.json",
+        "sha256": "d4f8e32ffb37346c2e56a811428e1a83718c899b0a74010042363dedb84f0f72",
+        "metadata": {
+          "version": 1,
+          "type_temperature": 1.0,
+          "provenance": {
+            "trainer": "eval/strands/calibrate.py",
+            "accepted_calibration": false,
+            "acceptance_policy": "held-out training-group NLL improves AND confident_wrong at preserved Strands probability-equivalent admission minimum does not increase",
+            "training_rows": 280,
+            "cv": "5-fold StratifiedGroupKFold, declared and near-duplicate family groups",
+            "responses_sha256": "ca0cd2dc7449a3867f023672d8d72d74519bfcc21ce1bbf915bea8fa76a25be5",
+            "requests_sha256": "6f4c5947747f41669d1baf19703f1bb3cd339bce516d400fcf12c98a007f3a6a",
+            "training_files": {
+              "train-a.jsonl": "2810643a262ee32bca10b76ce66fb722d0b8720604347fe2a321c6f15f13ab63",
+              "train-b.jsonl": "eca713d80e500a71a973036adb04d008c0007684f5b2d81c0aa67c9fc4e2c758",
+              "train-c.jsonl": "3b50505161190cb1a9d0efd3c299cab07d4b20ca53e852603c22cf8ec48064f2",
+              "train-d.jsonl": "07c20c2a71acbc5c1fe04d795991d6a08c92329b498e285bdb93991da08d5c79",
+              "train-e.jsonl": "f69446f879c0726cae7460c980a367d24563e2dfa52911bdde511f995cec4bad"
+            },
+            "checkpoint": {
+              "status": "ok",
+              "ready": true,
+              "checkpoint": "/Users/gouravnss/.cache/huggingface/hub/models--StrandsAgents--strands-decider-2B-hobson-v19/snapshots/bb282d786bc251fd4e3068de3ada9ddbb38127cd",
+              "checkpoint_revision": "bb282d786bc251fd4e3068de3ada9ddbb38127cd",
+              "base_model": "Qwen/Qwen3.5-2B-Base",
+              "base_model_path": "/Users/gouravnss/.cache/huggingface/hub/models--Qwen--Qwen3.5-2B-Base/snapshots/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+              "base_model_revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+              "head_sha256": "daad0727152b6185447cee36f78230c144312feb7b19f02749b19645238b5287",
+              "model": "strands-decider-2B-hobson-v19-q4",
+              "device": "mlx",
+              "prefix_cache": false,
+              "max_batch": 1,
+              "serial": true,
+              "quantization_bits": 4,
+              "cache_limit_bytes": 134217728,
+              "max_length": 4096,
+              "load_ms": 27420.147374999942,
+              "warmup_ms": 2288.407084000937,
+              "ready_ms": 29708.603374998347,
+              "warmup": [
+                {
+                  "profile": "configured_short",
+                  "latency_ms": 1768.9288749970729,
+                  "questions": 1,
+                  "input_tokens": 177
+                },
+                {
+                  "profile": "configured_long",
+                  "latency_ms": 512.3409580010048,
+                  "questions": 1,
+                  "input_tokens": 443
+                }
+              ],
+              "warmup_rubric": "client",
+              "deadline_header": "X-Request-Deadline-Unix-Ms"
+            },
+            "raw_cv_nll": 0.413655,
+            "calibrated_cv_nll": 0.317553
+          }
+        }
+      },
+      {
+        "path": "/Users/gouravnss/personal/nasiko-laya-retrain/llm-router/eval/strands/calibration/selection-manifest.json",
+        "sha256": "0ef811b5eab5b596fa9b926c77b7241f8c223cb2f8ada9fcdf67a58bd317d86c",
+        "metadata": {
+          "training_files": {
+            "train-a.jsonl": "2810643a262ee32bca10b76ce66fb722d0b8720604347fe2a321c6f15f13ab63",
+            "train-b.jsonl": "eca713d80e500a71a973036adb04d008c0007684f5b2d81c0aa67c9fc4e2c758",
+            "train-c.jsonl": "3b50505161190cb1a9d0efd3c299cab07d4b20ca53e852603c22cf8ec48064f2",
+            "train-d.jsonl": "07c20c2a71acbc5c1fe04d795991d6a08c92329b498e285bdb93991da08d5c79",
+            "train-e.jsonl": "f69446f879c0726cae7460c980a367d24563e2dfa52911bdde511f995cec4bad"
+          },
+          "selected_sha256": "a51e86668bc0141a930b1efc221fc531db01dc472c419be0e70a0df5eca4cc66",
+          "n": 280,
+          "groups": 277,
+          "types": {
+            "code_generation": 40,
+            "code_understanding": 40,
+            "technical_design": 40,
+            "analytical_reasoning": 40,
+            "writing": 40,
+            "factual_lookup": 40,
+            "general": 40
+          },
+          "source_files": {
+            "train-d.jsonl": 47,
+            "train-c.jsonl": 68,
+            "train-e.jsonl": 64,
+            "train-a.jsonl": 42,
+            "train-b.jsonl": 59
+          },
+          "policy": "40/type; at most one declared family; SHA256(seed:id) ordering; char5Jaccard>=0.7 grouped across selected requests; no final test labels read"
+        }
+      },
+      {
+        "path": "/Users/gouravnss/personal/nasiko-laya-retrain/llm-router/eval/strands/calibration/inference-manifest.json",
+        "sha256": "7c51064dd8dd8c89a20e580da67b9282a9f42d81088ebf4a8086564e07db9723",
+        "metadata": {
+          "health": {
+            "status": "ok",
+            "ready": true,
+            "checkpoint": "/Users/gouravnss/.cache/huggingface/hub/models--StrandsAgents--strands-decider-2B-hobson-v19/snapshots/bb282d786bc251fd4e3068de3ada9ddbb38127cd",
+            "checkpoint_revision": "bb282d786bc251fd4e3068de3ada9ddbb38127cd",
+            "base_model": "Qwen/Qwen3.5-2B-Base",
+            "base_model_path": "/Users/gouravnss/.cache/huggingface/hub/models--Qwen--Qwen3.5-2B-Base/snapshots/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+            "base_model_revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+            "head_sha256": "daad0727152b6185447cee36f78230c144312feb7b19f02749b19645238b5287",
+            "model": "strands-decider-2B-hobson-v19-q4",
+            "device": "mlx",
+            "prefix_cache": false,
+            "max_batch": 1,
+            "serial": true,
+            "quantization_bits": 4,
+            "cache_limit_bytes": 134217728,
+            "max_length": 4096,
+            "load_ms": 27420.147374999942,
+            "warmup_ms": 2288.407084000937,
+            "ready_ms": 29708.603374998347,
+            "warmup": [
+              {
+                "profile": "configured_short",
+                "latency_ms": 1768.9288749970729,
+                "questions": 1,
+                "input_tokens": 177
+              },
+              {
+                "profile": "configured_long",
+                "latency_ms": 512.3409580010048,
+                "questions": 1,
+                "input_tokens": 443
+              }
+            ],
+            "warmup_rubric": "client",
+            "deadline_header": "X-Request-Deadline-Unix-Ms"
+          },
+          "requests_sha256": "6f4c5947747f41669d1baf19703f1bb3cd339bce516d400fcf12c98a007f3a6a",
+          "selection_sha256": "a51e86668bc0141a930b1efc221fc531db01dc472c419be0e70a0df5eca4cc66",
+          "url": "http://127.0.0.1:18899"
+        }
+      },
+      {
+        "path": "/Users/gouravnss/personal/nasiko-laya-retrain/llm-router/eval/strands/calibration/cv-report.json",
+        "sha256": "ff5f1f2705aae0fc4a7068b00630ed958df6c289e83a3919454bb87005f1b7e4",
+        "metadata": {
+          "raw_probability": {
+            "n": 280,
+            "accuracy": 0.9035714285714286,
+            "nll": 0.4136546835391022,
+            "ece": 0.14630396563185213,
+            "top_label_brier": 0.09674603410027456,
+            "multiclass_brier": 0.18509579109833793,
+            "low_confidence": 0.08571428571428572,
+            "trusted_accuracy": 0.93359375,
+            "confident_wrong": 17
+          },
+          "grouped_cv_calibrated": {
+            "n": 280,
+            "accuracy": 0.9035714285714286,
+            "nll": 0.31755313841911853,
+            "ece": 0.02069883987483066,
+            "top_label_brier": 0.07268280978007119,
+            "multiclass_brier": 0.1536890210081233,
+            "low_confidence": 0.02857142857142857,
+            "trusted_accuracy": 0.9154411764705882,
+            "confident_wrong": 23
+          },
+          "folds": [
+            {
+              "n": 56,
+              "temperature": 0.5799999999999998
+            },
+            {
+              "n": 56,
+              "temperature": 0.5799999999999998
+            },
+            {
+              "n": 56,
+              "temperature": 0.5799999999999998
+            },
+            {
+              "n": 56,
+              "temperature": 0.5799999999999998
+            },
+            {
+              "n": 56,
+              "temperature": 0.5399999999999998
+            }
+          ],
+          "selected_temperature": 1.0,
+          "accepted_calibration": false,
+          "admission_min_type_probability": 0.48571428571428577,
+          "acceptance_policy": "held-out training-group NLL improves AND confident_wrong at preserved Strands probability-equivalent admission minimum does not increase",
+          "notes": "Probabilities, not native normalized concentration. CV grades held-out training families only. Argmax unchanged. No final evaluation set read."
+        }
+      }
+    ]
+  },
+  "repeats": 2,
+  "order": [
+    "regex",
+    "laya",
+    "strands"
+  ],
+  "source_snapshot": "/Users/gouravnss/personal/nasiko-laya-retrain/llm-router/eval/real-world/optimized-results/source-snapshot",
+  "runs": [
+    {
+      "backend": "regex",
+      "repeat": 1,
+      "elapsed_s": 0.026967457997670863,
+      "predictions": 100,
+      "predictions_sha256": "98acdacb35cca607110ec215786c766ff567c8f00551d53a7a2bb921a63ced87",
+      "log_sha256": "a1a20216d259cd49b1ca34f701d0086199e49d0d8782785275f9d8fa9fe65b65"
+    },
+    {
+      "backend": "laya",
+      "repeat": 1,
+      "elapsed_s": 23.503045624998776,
+      "predictions": 100,
+      "predictions_sha256": "82686e242c5c96b86267a2c67ea2633e4f1b0c4fc1b62f84e0718c808fe155a6",
+      "log_sha256": "396531178605643a571d3fc553495dd6ccb482540f9533e28a40dc6347efadea"
+    },
+    {
+      "backend": "strands",
+      "repeat": 1,
+      "elapsed_s": 4.53306991700083,
+      "predictions": 100,
+      "predictions_sha256": "fbba9e8f103e66ac60a935d64efa32e10dedfd9795824889947337bb0062fca4",
+      "log_sha256": "a3c1de888cd3006d8a14f3521c3a255785c00f76fb99a716b39bfb31d7c8de7d"
+    },
+    {
+      "backend": "regex",
+      "repeat": 2,
+      "elapsed_s": 0.015673292000428773,
+      "predictions": 100,
+      "predictions_sha256": "ed36ebe422389a731d1a05cb644ba0fdad6ddddfcc73b85555b14a0fa55b6c4d",
+      "log_sha256": "4f10e4822f9ecd611d3941686ad93c1469edfcb41563b06fb200673aa9cb8ff4"
+    },
+    {
+      "backend": "laya",
+      "repeat": 2,
+      "elapsed_s": 18.975381583000853,
+      "predictions": 100,
+      "predictions_sha256": "0ad9fc9b1a85da959906a32332e9c32f0765dfd3dd0c8fead6b0ee7f1882ac8a",
+      "log_sha256": "e525799daa157a6655790e952f8bcae8c6b5857a3b693e35bba45904002ff15f"
+    },
+    {
+      "backend": "strands",
+      "repeat": 2,
+      "elapsed_s": 32.66452612499779,
+      "predictions": 100,
+      "predictions_sha256": "8e9586ecb7310c92268e7f97e92df80a248c19bb43582f612b2c744a2f6b758b",
+      "log_sha256": "e40390f3ad6e3c70b0854a9491e3d40dab5e2fbb5e0c9967340ca7ddfb8a0e52"
+    }
+  ],
+  "source_files_sha256": {
+    "llm-router/examples/classifier_eval.rs": "853d93228c3c41594c37b476879d64919fad081bdcc24fd4ad837631d8d13b8e",
+    "llm-router/src/lib.rs": "1c544fbd8aa397c70beaa1abb5c025632e6ea6cc7d3af1931e2d9e17bc0ed1bc",
+    "llm-router/src/config.rs": "e1ae329177d932bf8525920a74941dddd80cc282e37ed32e7636476e90babee5",
+    "llm-router/src/routing/request_classifier.rs": "3b43066932eb803e013482ee5c6c89c8531d9b013a76a46d27fdd225bcf14b4a",
+    "llm-router/src/routing/classifier.rs": "ec42efb8dc1d01739ea0577806bc1fc8ab7f723f5ef08a65b9bf18e3caca01cd",
+    "llm-router/src/routing/patterns.rs": "959f16dcf621aba8fbd63ad9a628044b6ce8188b2655936353db4896f5d659b7",
+    "llm-router/src/routing/laya.rs": "ef15aaa43ca3546fbff5d3eb7e23100d594676fc2ca45a859bc0100ee17390c5",
+    "llm-router/src/routing/strands.rs": "452fb6d1359bafada65412e670d783e83fa9bbb686ed4832a3aa9549461bd942",
+    "llm-router/src/routing/hybrid.rs": "9055a1c12d13a0dba6ca3c3f6132dfc4a796c778f8c8a3b070595a676dac6510",
+    "llm-router/src/routing/local_classifier.rs": "e7705a48548307cd47a928fe874e283d7e259e63c21b7f8830ee33f0b522c0c5",
+    "llm-router/eval/strands/serve_local.py": "4aa7c9be1c2b9cda275a8fe8b52fbbb25683ab974d8c5e9e563cee2fce3a13de",
+    "llm-router/eval/strands/calibrate.py": "a8e96a0706292624ee65ed2bdf9bee62c21b5dd7c0c2d2075b77883df19b8f7f",
+    "llm-router/assets/strands_calibration.json": "d4f8e32ffb37346c2e56a811428e1a83718c899b0a74010042363dedb84f0f72",
+    "llm-router/assets/local_classifier.json": "a85209c8e40c3d2c0db0c0509d35980ff40eb433a3bf1fda7e62af8653a0d46a"
+  }
+}
