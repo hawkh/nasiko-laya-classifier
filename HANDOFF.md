@@ -52,10 +52,12 @@ The competitor PR Nasiko-Labs/nasiko#260 uses the same model family and reports 
 
 ## In progress / next
 
-1. **Training data.**
-   - `eval/train-c.jsonl` is written: 420 rows, robustness slices, with families.
-   - `train-d.jsonl` (realistic traffic) and `train-e.jsonl` (decision-boundary minimal pairs) are being written by other agents. If they're missing, write them with the same schema: `{id, family, query, context, request_type, complexity, tags}`.
-   - Never read the validation or public sets while writing training data.
+1. **Training data: done.** `eval/train-a` … `train-e.jsonl`: 1,812 rows in total. c, d and e (420 rows each) are grouped into paraphrase or minimal-pair `family` sets:
+   - `train-c`: robustness slices;
+   - `train-d`: realistic production traffic;
+   - `train-e`: decision-boundary minimal pairs.
+
+   None of them was written with access to the validation or public sets.
 2. **Retrain.** Run `python eval/train_local.py` from `llm-router/` in WSL. Then run:
    ```
    LAYA_URL=http://localhost:8000 BENCH_REPORT=eval/benchmark-report.md cargo test --release -p nasiko-llm-router --test classifier_benchmark -- --nocapture
