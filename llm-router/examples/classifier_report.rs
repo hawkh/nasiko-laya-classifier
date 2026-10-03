@@ -2,7 +2,7 @@
 //!
 //! ```sh
 //! laya-serve &   # or: docker compose --profile laya up -d laya
-//! cargo run -p nasiko-llm-router --example classifier_eval -- [dev|test|all]
+//! cargo run -p nasiko-llm-router --example classifier_report -- [dev|test|all]
 //! ```
 //!
 //! Reads `llm-router/eval/requests.jsonl` (`{id, split, query, context, type, complexity}`),

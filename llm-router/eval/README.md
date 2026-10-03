@@ -13,7 +13,7 @@ python -m pip install 'laya[serve]==0.3.24'
 LAYA_MODELS=multilingual laya-serve
 
 # 2. the report (regex vs. Laya through the router's own code paths)
-cargo run -p nasiko-llm-router --example classifier_eval -- test
+cargo run -p nasiko-llm-router --example classifier_report -- test
 ```
 
 There are two stages:
