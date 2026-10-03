@@ -1,6 +1,6 @@
 # Handoff: P2 request classifier (llm-router)
 
-The branch is `feat/llm-router-optimizer`, in the private repo `hawkh/nasiko-laya-classifier`. PR #1 is open against that repo's `main`, which mirrors Nasiko-Labs/nasiko main.
+The branch is `feat/llm-router-optimizer`, in the private repo `hawkh/nasiko-laya-classifier`. PR #2 is open against that repo's `main`, which mirrors Nasiko-Labs/nasiko main.
 
 **Rules:**
 - Never push to Nasiko-Labs (`origin`). Push to `private` only.
